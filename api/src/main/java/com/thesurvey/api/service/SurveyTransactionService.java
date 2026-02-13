@@ -7,6 +7,7 @@ import com.thesurvey.api.dto.request.survey.SurveyRequestDto;
 import com.thesurvey.api.dto.response.survey.SurveyResponseDto;
 import com.thesurvey.api.exception.ErrorMessage;
 import com.thesurvey.api.exception.mapper.BadRequestExceptionMapper;
+import com.thesurvey.api.exception.mapper.NotFoundExceptionMapper;
 import com.thesurvey.api.repository.SurveyRepository;
 import com.thesurvey.api.repository.UserRepository;
 import com.thesurvey.api.service.mapper.SurveyMapper;
@@ -37,16 +38,20 @@ public class SurveyTransactionService {
     @CacheEvict(value = "surveyListCache", allEntries = true)
     public SurveyResponseDto createSurveyTransactional(SurveyRequestDto surveyRequestDto, User user,
                                                        List<EnumTypeEntity.CertificationType> certificationTypes) {
-        validateCreateSurvey(surveyRequestDto, user);
+        Long userId = user.getUserId();
+        String userName = user.getName();
+        User lockedUser = userRepository.findByUserIdForUpdate(userId)
+                .orElseThrow(() -> new NotFoundExceptionMapper(ErrorMessage.USER_NAME_NOT_FOUND, userName));
+        validateCreateSurvey(surveyRequestDto, lockedUser);
 
         int surveyCreatePoints = surveyRequestDto.getQuestions().stream()
                 .mapToInt(questionRequestDto -> PointUtil.calculateSurveyCreatePoints(questionRequestDto.getQuestionType()))
                 .sum();
-        pointHistoryService.savePointHistory(user, -surveyCreatePoints);
-        Survey survey = surveyRepository.save(surveyMapper.toSurvey(surveyRequestDto, user.getUserId()));
+        pointHistoryService.savePointHistory(lockedUser, -surveyCreatePoints);
+        Survey survey = surveyRepository.save(surveyMapper.toSurvey(surveyRequestDto, lockedUser.getUserId()));
         questionService.createQuestion(surveyRequestDto.getQuestions(), survey);
-        participationService.createParticipation(user, certificationTypes, survey);
-        return surveyMapper.toSurveyResponseDto(survey, user.getUserId());
+        participationService.createParticipation(lockedUser, certificationTypes, survey);
+        return surveyMapper.toSurveyResponseDto(survey, lockedUser.getUserId());
     }
 
     private void validateCreateSurvey(SurveyRequestDto surveyRequestDto, User user) {

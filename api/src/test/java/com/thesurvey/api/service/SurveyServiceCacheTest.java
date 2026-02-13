@@ -13,6 +13,7 @@ import com.thesurvey.api.dto.request.user.UserLoginRequestDto;
 import com.thesurvey.api.dto.request.user.UserRegisterRequestDto;
 import com.thesurvey.api.dto.response.survey.SurveyListPageDto;
 import com.thesurvey.api.dto.response.survey.SurveyResponseDto;
+import com.thesurvey.api.exception.mapper.BadRequestExceptionMapper;
 import com.thesurvey.api.repository.SurveyRepository;
 import com.thesurvey.api.repository.UserRepository;
 import org.junit.jupiter.api.BeforeAll;
@@ -29,18 +30,19 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 @SpringBootTest
-@ActiveProfiles("revision")
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Transactional
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -79,8 +81,8 @@ public class SurveyServiceCacheTest extends BaseControllerTest {
     @BeforeAll
     void setUpBeforeAll() throws Exception {
         UserRegisterRequestDto userRegisterRequestDto = UserRegisterRequestDto.builder()
-                .name("surveyServiceConcurrent")
-                .email("surveyServiceConcurrent@gmail.com")
+                .name("surveyServiceCache")
+                .email("surveyServiceCache@gmail.com")
                 .password("Password40@")
                 .phoneNumber("01012345678")
                 .build();
@@ -114,7 +116,7 @@ public class SurveyServiceCacheTest extends BaseControllerTest {
     @BeforeEach
     void setupBeforeEach() throws Exception {
         UserLoginRequestDto userLoginRequestDto = UserLoginRequestDto.builder()
-                .email("surveyServiceConcurrent@gmail.com")
+                .email("surveyServiceCache@gmail.com")
                 .password("Password40@")
                 .build();
         mockLogin(userLoginRequestDto, true);
@@ -146,9 +148,11 @@ public class SurveyServiceCacheTest extends BaseControllerTest {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         SurveyResponseDto surveyResponseDto = surveyService.createSurvey(surveyRequestDto);
         Long questionId = surveyResponseDto.getQuestions().get(0).getQuestionBankId();
+        Long questionOptionId = surveyResponseDto.getQuestions().get(0).getQuestionOptions().get(0)
+                .getQuestionOptionId();
 
         QuestionOptionUpdateRequestDto questionOptionUpdateRequestDto = QuestionOptionUpdateRequestDto.builder()
-                .optionId(questionId)
+                .optionId(questionOptionId)
                 .option("This is test update option")
                 .description("This is test update option description")
                 .build();
@@ -195,5 +199,35 @@ public class SurveyServiceCacheTest extends BaseControllerTest {
 
         // then
         assertThat(cacheManager.getCache("surveyListCache").get(1)).isNull();
+    }
+
+    @Test
+    public void testSurveyUpdateCannotChangeQuestionType() throws Exception {
+        // given
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        SurveyResponseDto surveyResponseDto = surveyService.createSurvey(surveyRequestDto);
+        Long questionId = surveyResponseDto.getQuestions().get(0).getQuestionBankId();
+
+        QuestionBankUpdateRequestDto questionBankUpdateRequestDto = QuestionBankUpdateRequestDto.builder()
+                .questionBankId(questionId)
+                .title("This is test update question title")
+                .description("This is test update question description")
+                .questionNo(1)
+                .questionType(EnumTypeEntity.QuestionType.LONG_ANSWER)
+                .build();
+
+        SurveyUpdateRequestDto surveyUpdateRequestDto = SurveyUpdateRequestDto.builder()
+                .surveyId(surveyResponseDto.getSurveyId())
+                .title("This is test update title.")
+                .description("This is test update description")
+                .startedDate(LocalDateTime.now(ZoneId.of("Asia/Seoul")).plusDays(3))
+                .endedDate(LocalDateTime.now(ZoneId.of("Asia/Seoul")).plusDays(4))
+                .certificationTypes(List.of(EnumTypeEntity.CertificationType.DRIVER_LICENSE))
+                .questions(List.of(questionBankUpdateRequestDto))
+                .build();
+
+        // when, then
+        assertThrows(BadRequestExceptionMapper.class,
+                () -> surveyService.updateSurvey(surveyUpdateRequestDto));
     }
 }

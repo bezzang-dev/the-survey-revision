@@ -3,7 +3,7 @@ package com.thesurvey.api.domain;
 import java.io.Serializable;
 import java.util.Objects;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 import lombok.AccessLevel;
 import lombok.Builder;

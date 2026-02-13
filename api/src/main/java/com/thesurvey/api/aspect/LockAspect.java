@@ -10,6 +10,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -21,18 +22,21 @@ import java.util.concurrent.TimeUnit;
  */
 @Aspect
 @Component
+@Profile("!test")
 public class LockAspect {
 
     private final RedissonClient redissonClient;
+    private final UserUtil userUtil;
 
-    public LockAspect(RedissonClient redissonClient) {
+    public LockAspect(RedissonClient redissonClient, UserUtil userUtil) {
         this.redissonClient = redissonClient;
+        this.userUtil = userUtil;
     }
 
     @Around("@annotation(lockable)")
     public Object lock(ProceedingJoinPoint joinPoint, Lockable lockable) throws Throwable {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = UserUtil.getUserFromAuthentication(authentication);
+        User user = userUtil.getUserFromAuthentication(authentication);
         long timeout = lockable.timeout();
         RLock lock = redissonClient.getLock(String.format("%s:%s", lockable.key(), user.getName()));
         boolean isLocked = false;

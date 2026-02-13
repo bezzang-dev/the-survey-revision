@@ -27,11 +27,12 @@ public class UserCertificationService {
 
     private final UserCertificationRepository userCertificationRepository;
     private final UserCertificationMapper userCertificationMapper;
+    private final UserUtil userUtil;
 
     @Transactional(readOnly = true)
     public UserCertificationListDto getUserCertifications() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = UserUtil.getUserIdFromAuthentication(authentication);
+        Long userId = userUtil.getUserIdFromAuthentication(authentication);
         log.info("Fetching certifications for user ID: {}", userId);
         return userCertificationMapper.toUserCertificationListDto(userId);
     }
@@ -39,7 +40,7 @@ public class UserCertificationService {
     @Transactional
     public UserCertificationListDto updateUserCertification(Authentication authentication,
                                                             UserCertificationUpdateRequestDto userCertificationUpdateRequestDto) {
-        User user = UserUtil.getUserFromAuthentication(authentication);
+        User user = userUtil.getUserFromAuthentication(authentication);
         log.info("Updating certifications for user ID: {}", user.getUserId());
         List<Integer> userCertificationList =
                 userCertificationRepository.findUserCertificationTypeByUserId(user.getUserId());

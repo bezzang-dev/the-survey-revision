@@ -2,15 +2,14 @@ package com.thesurvey.api.dto.request.answeredQuestion;
 
 import java.util.List;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
-// FIXME: this should be fixed since answers should only have one of 4 question types
 @Getter
 @Builder
 public class AnsweredQuestionRequestDto {

@@ -2,9 +2,9 @@ package com.thesurvey.api.dto.request.answeredQuestion;
 
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 import com.thesurvey.api.domain.EnumTypeEntity.QuestionType;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,11 +19,9 @@ public class AnsweredQuestionDto {
     @Schema(example = "1", description = "응답하려는 설문은행 아이디입니다.")
     private Long questionBankId;
 
-    @NotNull
     @Schema(example = "true", description = "답변한 질문의 필수 질문 여부입니다.")
     private Boolean isRequired;
 
-    @NotNull
     @Schema(example = "SINGLE_CHOICE", description = "답변한 질문 유형입니다.")
     private QuestionType questionType;
 

@@ -23,7 +23,6 @@ import com.thesurvey.api.service.SurveyService;
 import com.thesurvey.api.service.mapper.QuestionBankMapper;
 import com.thesurvey.api.service.mapper.QuestionMapper;
 import com.thesurvey.api.service.mapper.SurveyMapper;
-import com.thesurvey.api.util.UserUtil;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
@@ -269,7 +268,7 @@ public class SurveyControllerTest extends BaseControllerTest {
     void testUpdateSurvey() throws Exception {
         // given
         Long surveyId = mockSurvey.getLong("surveyId");
-        Long userId = UserUtil.getUserIdFromAuthentication(authentication);
+        Long userId = userRepository.findByName(authentication.getName()).orElseThrow().getUserId();
         Long authorId = mockSurvey.getLong("authorId");
 
         JSONArray questions = mockSurvey.getJSONArray("questions");
@@ -388,7 +387,7 @@ public class SurveyControllerTest extends BaseControllerTest {
 
         Long surveyId = mockSurvey.getLong("surveyId");
         Long authorId = mockSurvey.getLong("authorId");
-        Long userId = UserUtil.getUserIdFromAuthentication(authentication);
+        Long userId = userRepository.findByName(authentication.getName()).orElseThrow().getUserId();
 
         // when
         mockMvc.perform(delete("/surveys/" + surveyId)).andExpect(status().isNoContent());

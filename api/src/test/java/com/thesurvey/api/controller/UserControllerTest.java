@@ -19,7 +19,6 @@ import com.thesurvey.api.dto.request.user.UserUpdateRequestDto;
 import com.thesurvey.api.repository.UserRepository;
 import com.thesurvey.api.service.AuthenticationService;
 import com.thesurvey.api.service.UserService;
-import com.thesurvey.api.util.UserUtil;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
@@ -292,7 +291,7 @@ public class UserControllerTest extends BaseControllerTest {
     @Test
     void testGetUserProfile() throws Exception {
         // given
-        User user = UserUtil.getUserFromAuthentication(authentication);
+        User user = userRepository.findByName(authentication.getName()).orElseThrow();
 
         // when
         MvcResult result = mockMvc.perform(get("/users/profile")
@@ -311,7 +310,7 @@ public class UserControllerTest extends BaseControllerTest {
     @Test
     void testUpdateUserProfile() throws Exception {
         // given
-        User user = UserUtil.getUserFromAuthentication(authentication);
+        User user = userRepository.findByName(authentication.getName()).orElseThrow();
         UserUpdateRequestDto userUpdateRequestDto = UserUpdateRequestDto.builder()
             .address("Updated address")
             .phoneNumber("01699999999")
@@ -336,7 +335,7 @@ public class UserControllerTest extends BaseControllerTest {
     @Test
     void testDeleteUser() throws Exception {
         // given
-        Long userId = UserUtil.getUserIdFromAuthentication(authentication);
+        Long userId = userRepository.findByName(authentication.getName()).orElseThrow().getUserId();
 
         // when
         mockMvc.perform(delete("/users")).andExpect(status().isNoContent());

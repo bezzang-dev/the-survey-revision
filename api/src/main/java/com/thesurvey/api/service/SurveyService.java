@@ -71,6 +71,8 @@ public class SurveyService {
 
     private final SurveyTransactionService surveyTransactionService;
 
+    private final UserUtil userUtil;
+
     @Transactional(readOnly = true)
     @Cacheable(value = "surveyListCache", key = "#page")
     public SurveyListPageDto getAllSurvey(int page) {
@@ -96,7 +98,7 @@ public class SurveyService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         List<Integer> surveyCertificationList =
                 surveyRepository.findCertificationTypeBySurveyIdAndAuthorId(surveyId, survey.getAuthorId());
-        Long userId = UserUtil.getUserIdFromAuthentication(authentication);
+        Long userId = userUtil.getUserIdFromAuthentication(authentication);
 
         // validate if the user has completed the necessary certifications for the survey
         if(!survey.getAuthorId().equals(userId)){
@@ -113,7 +115,7 @@ public class SurveyService {
 
     @Transactional(readOnly = true)
     public List<UserSurveyTitleDto> getUserCreatedSurveys(Authentication authentication) {
-        Long authorId = UserUtil.getUserIdFromAuthentication(authentication);
+        Long authorId = userUtil.getUserIdFromAuthentication(authentication);
         List<Survey> surveys = surveyRepository.findUserCreatedSurveysByAuthorID(authorId);
         return surveys.stream()
                 .map(survey -> new UserSurveyTitleDto(survey.getSurveyId(), survey.getTitle()))
@@ -133,7 +135,7 @@ public class SurveyService {
         // validate survey author from current user
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        validateSurveyAuthor(UserUtil.getUserIdFromAuthentication(authentication),
+        validateSurveyAuthor(userUtil.getUserIdFromAuthentication(authentication),
                 survey.getAuthorId());
 
         // validate if the survey has not yet started
@@ -155,14 +157,18 @@ public class SurveyService {
                         ? List.of(EnumTypeEntity.CertificationType.NONE) : surveyRequestDto.getCertificationTypes();
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = UserUtil.getUserFromAuthentication(authentication);
+        User user = userUtil.getUserFromAuthentication(authentication);
         return surveyTransactionService.createSurveyTransactional(surveyRequestDto, user, certificationTypes);
     }
 
     @Transactional
     @CacheEvict(value = "surveyListCache", allEntries = true)
     public void deleteSurvey(Authentication authentication, Long surveyId) {
-        User user = UserUtil.getUserFromAuthentication(authentication);
+        User user = userUtil.getUserFromAuthentication(authentication);
+        Long userId = user.getUserId();
+        String userName = user.getName();
+        user = userRepository.findByUserIdForUpdate(userId)
+                .orElseThrow(() -> new NotFoundExceptionMapper(ErrorMessage.USER_NAME_NOT_FOUND, userName));
         Survey survey = getSurveyFromSurveyId(surveyId);
 
         // validate survey author from current user
@@ -191,7 +197,7 @@ public class SurveyService {
     @CacheEvict(value = "surveyListCache", allEntries = true)
     public SurveyResponseDto updateSurvey(SurveyUpdateRequestDto surveyUpdateRequestDto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = UserUtil.getUserIdFromAuthentication(authentication);
+        Long userId = userUtil.getUserIdFromAuthentication(authentication);
         Survey survey = getSurveyFromSurveyId(surveyUpdateRequestDto.getSurveyId());
 
         // validate survey author from current user

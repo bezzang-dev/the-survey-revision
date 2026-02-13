@@ -10,16 +10,16 @@ import org.springframework.stereotype.Component;
 public class AnsweredQuestionMapper {
 
     public AnsweredQuestion toAnsweredQuestion(AnsweredQuestionDto answeredQuestionRequestDto,
-                                               User user, Question question) {
+                                               User user, Question question, boolean isRequired) {
         return AnsweredQuestion
                 .builder()
                 .user(user)
                 .question(question)
                 .singleChoice(answeredQuestionRequestDto.getSingleChoice())
                 .shortAnswer(StringUtil.trimShortLongAnswer(answeredQuestionRequestDto.getShortAnswer(),
-                        answeredQuestionRequestDto.getIsRequired()))
+                        isRequired))
                 .longAnswer(StringUtil.trimShortLongAnswer(answeredQuestionRequestDto.getLongAnswer(),
-                        answeredQuestionRequestDto.getIsRequired()))
+                        isRequired))
                 .build();
     }
 
