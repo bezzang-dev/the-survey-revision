@@ -13,7 +13,6 @@ import GifticonPurchaseModal from '../../components/Modal/GifticonPurchaseModal'
 import { useTheme } from '../../hooks/useTheme';
 import { RootState } from '../../reducers';
 import { setSubPageOpen } from '../../types/header';
-import { SurveyResultListResponse } from '../../types/response/Survey';
 import { UserAuthListResponse } from '../../types/response/User';
 import { initializeAuthList } from '../../utils/authService';
 import { validatePassword, validatePhoneNumber } from '../../utils/validate';
@@ -56,14 +55,15 @@ const ArrowImage = styled(Icons.ARROW).attrs({
 `;
 
 const Container = styled.div`
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100dvh;
   background-color: ${(props) => props.theme.colors.container};
 `;
 
 const MypageContainer = styled.div`
-  padding: 5vw;
-  height: 80vh;
+  box-sizing: border-box;
+  padding: clamp(20px, 5vw, 48px);
+  min-height: calc(100dvh - 70px);
   background-color: ${(props) => props.theme.colors.container};
 `;
 
@@ -122,7 +122,7 @@ const ReplacePagetext = styled.span`
   color: ${(props) => props.theme.colors.default};
 `;
 
-const PurchaseButton = styled.div`
+const PurchaseButton = styled.button`
   margin-left: 1vw;
   display: flex;
   padding: 1.3vh;
@@ -229,23 +229,11 @@ export default function ProfilePage() {
           navigate('../mypage/auth-list');
         }
       })
-      .catch((error) => {
-        console.log(error.requests.status);
-      });
+      .catch(() => {});
   };
 
-  const navigateSurveyListPage = async () => {
-    axios
-      .get<SurveyResultListResponse>(requests.getSurveyResultList)
-      .then((res) => {
-        if (res.status === 200) {
-          console.log(res.data);
-          navigate('../mypage/survey-result/:id');
-        }
-      })
-      .catch((error) => {
-        console.log(error.requests.status);
-      });
+  const navigateSurveyListPage = () => {
+    navigate('../mypage/survey-result');
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {

@@ -9,7 +9,7 @@ export interface AuthProviderProps {
 
 export interface AuthContextType {
   user?: AxiosResponse<UserResponse>;
-  error?: any;
+  error?: unknown;
   isLoggedIn?: boolean;
   login: (body: UserLoginRequest) => void;
   register: (body: UserRegisterRequest) => void;

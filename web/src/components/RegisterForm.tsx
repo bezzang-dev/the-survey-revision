@@ -1,6 +1,5 @@
 import React, { useState, useReducer } from 'react';
 
-import { AxiosError, AxiosResponse } from 'axios';
 import { useNavigate } from 'react-router-dom';
 import styled, { DefaultTheme } from 'styled-components';
 
@@ -15,17 +14,10 @@ import InputContainer from './InputContainer';
 import AlertModal from './Modal/AlertModal';
 
 const Container = styled.div`
-  padding: 7vw;
-  margin-left: calc(20vw - 5vmin);
-  margin-right: calc(20vw - 5vmin);
-  margin-top: calc(2vh - 2vmin);
-  min-width: 30vh;
-  height: 80vh;
-
-  @media screen and (max-width: 800px) {
-    margin-left: 5vw;
-    margin-right: 5vw;
-  }
+  box-sizing: border-box;
+  width: min(94vw, 760px);
+  padding: clamp(20px, 6vw, 44px);
+  margin: clamp(14px, 2vh, 30px) auto 28px;
 `;
 
 const Form = styled.form`
@@ -35,9 +27,9 @@ const Form = styled.form`
 
 const RegisterTitle = styled.span`
   text-align: left;
-  font-size: 3vh;
+  font-size: clamp(26px, 4.2vw, 36px);
   font-weight: 1000;
-  margin-bottom: 2vh;
+  margin-bottom: 16px;
   color: ${(props) => props.theme.colors.default};
 `;
 
@@ -50,7 +42,7 @@ const AgreementCheckBox = styled.div`
 
 const FontText = styled.span`
   text-align: left;
-  font-size: 1.3vh;
+  font-size: clamp(13px, 1.5vw, 15px);
   font-weight: 600;
   color: ${(props) => props.theme.colors.default};
 `;
@@ -75,18 +67,17 @@ const CheckBox = styled.input`
 
 const CheckBoxLabel = styled.label`
   text-align: left;
-  font-size: 1.3vh;
+  font-size: clamp(13px, 1.5vw, 15px);
   font-weight: 600;
   color: ${(props) => props.theme.colors.default};
   margin-left: 0.5rem;
 `;
 
 const CompleteButton = styled.button`
-  margin-top: 1vh;
-  padding: 2vh;
-  padding-left: 8vw;
-  padding-right: 8vw;
-  font-size: 2vh;
+  margin-top: 10px;
+  width: 100%;
+  padding: 12px;
+  font-size: clamp(14px, 1.7vw, 17px);
   font-weight: 700;
   color: white;
   background-color: ${(props) => (props.disabled ? props.theme.colors.prhover : props.theme.colors.primary)};
@@ -123,7 +114,7 @@ const initialFormState: RegisterFormState = {
   isUserInfoConsentChecked: false,
 };
 
-export default function RegisterForm(props: RegisterFormProps) {
+export default function RegisterForm({ theme }: RegisterFormProps) {
   const navigate = useNavigate();
   const [state, dispatch] = useReducer(formReducer, initialFormState);
   const [isAlertModal, setIsAlertModal] = useState<boolean>(false);
@@ -268,9 +259,7 @@ export default function RegisterForm(props: RegisterFormProps) {
 
   const register = async (body: UserRegisterRequest) => {
     const res = await axios.post<UserResponse>(requests.register, body);
-    if (res.status === 200) {
-      navigate('../login', { replace: true });
-    }
+    return res.status === 200;
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -279,8 +268,7 @@ export default function RegisterForm(props: RegisterFormProps) {
 
   const handleOnSubmit = async () => {
     if (!checkUserInput()) {
-      // FIXME: to logger
-      throw new Error('Registeration failed');
+      return;
     }
 
     const userRegisterRequest: UserRegisterRequest = {
@@ -290,13 +278,17 @@ export default function RegisterForm(props: RegisterFormProps) {
       phoneNumber: state.phoneNumber,
     };
 
-    register(userRegisterRequest);
+    try {
+      const isRegistered = await register(userRegisterRequest);
 
-    // FIXME: belows are not validated and synchronous
-    setTitleAlert('회원가입');
-    setTextAlert('회원가입을 완료했어요!');
-    setIsAlertModal(true);
-    navigate('../login');
+      if (isRegistered) {
+        navigate('../login', { replace: true });
+      }
+    } catch (_error) {
+      setTitleAlert('회원가입 오류');
+      setTextAlert('회원가입에 실패했어요. 잠시 후 다시 시도해주세요.');
+      setIsAlertModal(true);
+    }
   };
 
   const closeAlertModal = () => {
@@ -304,13 +296,13 @@ export default function RegisterForm(props: RegisterFormProps) {
   };
 
   return (
-    <Container theme={props.theme}>
+    <Container theme={theme}>
       <Form onSubmit={handleSubmit}>
-        <RegisterTitle theme={props.theme}>회원가입</RegisterTitle>
+        <RegisterTitle theme={theme}>회원가입</RegisterTitle>
         <InputContainer
           title="이메일"
           inputOptions={{
-            theme: props.theme,
+            theme: theme,
             type: 'email',
             name: 'email',
             value: state.email,
@@ -318,7 +310,7 @@ export default function RegisterForm(props: RegisterFormProps) {
             placeholder: '이메일을 입력하세요.',
           }}
           buttonOptions={{
-            theme: props.theme,
+            theme: theme,
             title: '인증요청',
             type: 'submit',
             onClick: () => sendEmailAuthentication(state.email),
@@ -327,7 +319,7 @@ export default function RegisterForm(props: RegisterFormProps) {
         <InputContainer
           title="비밀번호"
           inputOptions={{
-            theme: props.theme,
+            theme: theme,
             type: 'password',
             name: 'password',
             value: state.password,
@@ -338,7 +330,7 @@ export default function RegisterForm(props: RegisterFormProps) {
         <InputContainer
           title="비밀번호 확인"
           inputOptions={{
-            theme: props.theme,
+            theme: theme,
             type: 'password',
             name: 'confirmPassword',
             value: state.confirmPassword,
@@ -347,14 +339,14 @@ export default function RegisterForm(props: RegisterFormProps) {
           }}
           buttonOptions={{
             title: '비밀번호 확인',
-            theme: props.theme,
+            theme: theme,
             type: 'submit',
             onClick: () => checkPassword(state.password, state.confirmPassword),
           }}
         />
         {isAlertModal && (
           <AlertModal
-            theme={props.theme}
+            theme={theme}
             title={titleAlert}
             level="INFO"
             text={textAlert}
@@ -365,7 +357,7 @@ export default function RegisterForm(props: RegisterFormProps) {
         <InputContainer
           title="이름"
           inputOptions={{
-            theme: props.theme,
+            theme: theme,
             type: 'text',
             name: 'name',
             value: state.name,
@@ -376,11 +368,11 @@ export default function RegisterForm(props: RegisterFormProps) {
         <InputContainer
           title="휴대폰 번호"
           prefixOptions={{
-            theme: props.theme,
+            theme: theme,
             title: '+82',
           }}
           inputOptions={{
-            theme: props.theme,
+            theme: theme,
             type: 'tel',
             name: 'phoneNumber',
             value: state.phoneNumber,
@@ -389,7 +381,7 @@ export default function RegisterForm(props: RegisterFormProps) {
             maxLength: 11,
           }}
           buttonOptions={{
-            theme: props.theme,
+            theme: theme,
             title: '인증요청',
             type: 'submit',
             onClick: sendAuthenticationNumber,
@@ -398,7 +390,7 @@ export default function RegisterForm(props: RegisterFormProps) {
         <InputContainer
           title="인증코드"
           inputOptions={{
-            theme: props.theme,
+            theme: theme,
             type: 'tel',
             name: 'key',
             value: state.key,
@@ -408,7 +400,7 @@ export default function RegisterForm(props: RegisterFormProps) {
             maxLength: 4,
           }}
           buttonOptions={{
-            theme: props.theme,
+            theme: theme,
             title: '인증하기',
             type: 'submit',
             onClick: authenticatePhoneNumber,
@@ -416,29 +408,31 @@ export default function RegisterForm(props: RegisterFormProps) {
         />
         <AgreementCheckBox>
           <CheckBox
+            id="agreeService"
             type="checkbox"
             name="agreeService"
             onChange={() => dispatch({ type: 'AGREE_SERVICE', payload: !state.isServiceAgreementChecked })}
           />
-          <CheckBoxLabel htmlFor="agreeService" theme={props.theme}>
+          <CheckBoxLabel htmlFor="agreeService" theme={theme}>
             [필수] 서비스 이용약관
           </CheckBoxLabel>
         </AgreementCheckBox>
         <AgreementCheckBox>
           <CheckBox
+            id="agreeInformation"
             type="checkbox"
             name="agreeInformation"
             onChange={() => dispatch({ type: 'AGREE_INFORMATION', payload: !state.isUserInfoConsentChecked })}
           />
-          <CheckBoxLabel htmlFor="agreeInformation" theme={props.theme}>
+          <CheckBoxLabel htmlFor="agreeInformation" theme={theme}>
             [필수] 개인정보 수집동의
           </CheckBoxLabel>
         </AgreementCheckBox>
-        <FontText theme={props.theme}>※ 서비스 이용약관 및 개인정보 수집에 동의해주세요.</FontText>
+        <FontText theme={theme}>※ 서비스 이용약관 및 개인정보 수집에 동의해주세요.</FontText>
         <CompleteButton
           onClick={handleOnSubmit}
           type="submit"
-          theme={props.theme}
+          theme={theme}
           disabled={!(state.isServiceAgreementChecked && state.isUserInfoConsentChecked)}
         >
           회원가입 완료하기

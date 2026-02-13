@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import styled from 'styled-components';
 
@@ -8,13 +8,10 @@ import LoginForm from '../components/LoginForm';
 import { useTheme } from '../hooks/useTheme';
 
 const Container = styled.div`
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100dvh;
   background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-    url(${BackgroundImage}) no-repeat center center fixed;
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;
+    url(${BackgroundImage}) no-repeat center center;
   background-size: cover;
 `;
 

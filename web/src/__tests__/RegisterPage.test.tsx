@@ -6,7 +6,6 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { PersistGate } from 'redux-persist/integration/react';
 
 import { store, persistor } from '../reducers/store';
-import MainPage from '../routes/MainPage';
 import RegisterPage from '../routes/RegisterPage';
 
 describe('[RegisterPage Test]', () => {

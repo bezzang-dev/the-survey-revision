@@ -84,14 +84,15 @@ const CheckImage = styled(Icons.CHECK).attrs({
 `;
 
 const Container = styled.div`
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100dvh;
   background-color: ${(props) => props.theme.colors.container};
 `;
 
 const AuthListContainer = styled.div`
-  padding: 5vw;
-  height: 80vh;
+  box-sizing: border-box;
+  padding: clamp(20px, 5vw, 48px);
+  min-height: calc(100dvh - 70px);
   background-color: ${(props) => props.theme.colors.container};
 `;
 

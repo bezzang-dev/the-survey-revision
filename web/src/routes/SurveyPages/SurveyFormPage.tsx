@@ -7,8 +7,8 @@ import SurveyCreateForm from '../../components/SurveyCreateForm/SurveyCreateForm
 import { useTheme } from '../../hooks/useTheme';
 
 const Container = styled.div`
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100dvh;
   background-color: ${(props) => props.theme.colors.background};
 `;
 

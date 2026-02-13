@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useDispatch } from 'react-redux';
+import { AnyAction, Dispatch } from 'redux';
 
 import { setCompleteAuth, setSuccessAuth } from '../../types/surveyAuth';
 
@@ -12,7 +12,7 @@ export const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id
 
 // 다른 로그인 환경에 영향을 끼치는 것을 방지하기 위한 kakao token값 초기화
 export const unlinkKakao = async (kakaoToken: string) => {
-  const res = await axios({
+  await axios({
     method: 'POST',
     url: `https://kapi.kakao.com/v1/user/unlink`,
     headers: {
@@ -26,7 +26,7 @@ export const unlinkKakao = async (kakaoToken: string) => {
  * 카카오 사용자 정보 조회를 위한 Function
  * @param kakaoToken : 카카오에서 받은 인자코드를 사용하여 받은 token값
  */
-export const getKakaoProfile = async (kakaoToken: string, username: string, dispatch = useDispatch()) => {
+export const getKakaoProfile = async (kakaoToken: string, username: string, dispatch: Dispatch<AnyAction>) => {
   try {
     const kakaoUser = await axios({
       method: 'GET',
@@ -36,20 +36,15 @@ export const getKakaoProfile = async (kakaoToken: string, username: string, disp
       },
     });
     const name = kakaoUser.data.properties.nickname;
-    console.log('theSurvey username : ', username);
-    console.log('kakaoUser name : ', name);
 
     if (name === username) {
-      console.log('카카오 인증 완료!');
       dispatch(setSuccessAuth(true));
-    } else {
-      // FIXME: handle logic for wrong username
-      console.log('사용자가 다릅니다!');
     }
     unlinkKakao(kakaoToken);
     dispatch(setCompleteAuth(true));
-  } catch (error) {
-    console.log(error);
+  } catch {
+    dispatch(setSuccessAuth(false));
+    dispatch(setCompleteAuth(true));
   }
 };
 
@@ -59,7 +54,7 @@ export const getKakaoProfile = async (kakaoToken: string, username: string, disp
  * @param username : The Survey에서 사용하는 사용자의 이름.
  * @param dispatch : 페이지변경이 일어나도 인증과정에 필요한 변수값들을 유지.
  */
-export const getKakaoUserData = async (authCode: string, username: string, dispatch = useDispatch()) => {
+export const getKakaoUserData = async (authCode: string, username: string, dispatch: Dispatch<AnyAction>) => {
   const params = new URLSearchParams();
   params.append('grant_type', 'authorization_code');
   params.append('client_id', KAKAO_REST_API_KEY);

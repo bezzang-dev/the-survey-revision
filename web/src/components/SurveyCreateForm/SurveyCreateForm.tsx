@@ -182,14 +182,18 @@ export default function SurveyCreateForm({ theme }: SurveyFormProps) {
 
   const deleteOptionAtId = (questionId: number, optionId: number) => {
     const newOptions = surveyData.questions[questionId].questionOptions;
+    let isDeleted = false;
     if (newOptions) {
       newOptions.splice(optionId, 1);
+      isDeleted = true;
     }
 
     const newQuestions = [...surveyData.questions];
     newQuestions[questionId] = { ...newQuestions[questionId], questionOptions: newOptions };
     setSurveyData({ ...surveyData, questions: newQuestions });
-    setNumOfContext(numOfContext + 1);
+    if (isDeleted) {
+      setNumOfContext(numOfContext - 1);
+    }
   };
 
   const editRequiredCertificationList = (value: number, isChecked: boolean) => {

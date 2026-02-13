@@ -10,23 +10,22 @@ import { useTheme } from '../hooks/useTheme';
 import { RootState } from '../reducers';
 
 const Container = styled.div`
-  width: 100vw;
-  height: 100vh;
-  background: url(${BackgroundImage}) no-repeat center center fixed;
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;
+  width: 100%;
+  min-height: 100dvh;
+  background: url(${BackgroundImage}) no-repeat center center;
   background-size: cover;
 `;
 
 const Introduction = styled.div`
-  margin-top: 30vh;
+  margin: 0 auto;
+  padding: clamp(60px, 16vh, 180px) 20px 40px;
+  max-width: 900px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   color: white;
-  font-size: 5vh;
+  font-size: clamp(28px, 5vw, 56px);
   font-weight: 500;
 `;
 
@@ -40,13 +39,11 @@ const AppTitle = styled.span`
 `;
 
 const Button = styled.button`
-  margin-top: 5vh;
+  margin-top: clamp(20px, 4vh, 40px);
   border: none;
-  padding: 2vh;
-  padding-left: 4vw;
-  padding-right: 4vw;
+  padding: 14px 28px;
   border-radius: ${(props) => props.theme.borderRadius};
-  font-size: 2vh;
+  font-size: clamp(15px, 2.2vw, 20px);
   font-weight: 700;
   color: white;
   background-color: ${(props) => props.theme.colors.primary};

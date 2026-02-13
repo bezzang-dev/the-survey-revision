@@ -1,10 +1,23 @@
 import { combineReducers } from 'redux';
-import { persistReducer } from 'redux-persist';
+import { createTransform, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 
+import { UserInformationState } from '../types/user';
 import { headerReducer } from './header';
 import { surveyAuthReducer } from './survey';
 import { userInformationReducer } from './userInfo';
+
+const userInformationTransform = createTransform(
+  (inboundState: UserInformationState) => ({
+    ...inboundState,
+    password: '',
+  }),
+  (outboundState: UserInformationState) => ({
+    ...outboundState,
+    password: '',
+  }),
+  { whitelist: ['userInformation'] }
+);
 
 /**
  * Maintaining all status through redux
@@ -13,6 +26,7 @@ import { userInformationReducer } from './userInfo';
 export const persistConfig = {
   key: 'root',
   storage,
+  transforms: [userInformationTransform],
 };
 
 /**

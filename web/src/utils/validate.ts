@@ -220,7 +220,8 @@ export const validateSurveyAnswer = (answer: AnsweredQuestion, question: Questio
   // 필수로 응답해야 하는 질문이 아닌 경우
   if (!answer.isRequired) {
     if (tmpQuestionType === QuestionType.LONG_ANSWER) {
-      if (answer.longAnswer?.trim() !== '' && answer.longAnswer!.trim().length < 10) return false;
+      const longAnswer = answer.longAnswer?.trim() ?? '';
+      if (longAnswer !== '' && longAnswer.length < 10) return false;
     }
     return true;
   }
@@ -234,7 +235,7 @@ export const validateSurveyAnswer = (answer: AnsweredQuestion, question: Questio
       if (typeof answer.singleChoice === 'undefined') return false;
       break;
     case QuestionType.LONG_ANSWER:
-      if (answer.longAnswer!.trim().length < 10) return false;
+      if ((answer.longAnswer?.trim().length ?? 0) < 10) return false;
       break;
     case QuestionType.SHORT_ANSWER:
       if (answer.shortAnswer?.trim() === '') return false;

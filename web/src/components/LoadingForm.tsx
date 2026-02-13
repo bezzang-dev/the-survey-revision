@@ -7,15 +7,15 @@ import { LoadingImage } from '../routes/MyPages/AuthenticationPage';
 import Header from './Header';
 
 const Container = styled.div`
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100dvh;
   background-color: ${(props) => props.theme.colors.container};
 `;
 
 const LoadingBoxContainer = styled.div`
-  padding: 5vw;
-  min-width: 40vh;
-  height: 80vh;
+  box-sizing: border-box;
+  padding: clamp(20px, 5vw, 48px);
+  min-height: calc(100dvh - 70px);
   flex-direction: column;
   background-color: ${(props) => props.theme.colors.container};
 `;
@@ -25,7 +25,7 @@ const Form = styled.form`
   justify-content: center;
   align-items: center;
   text-align: center;
-  margin-top: 20vw;
+  margin-top: clamp(60px, 14vh, 180px);
 `;
 
 const LoadingPageTitle = styled.div`

@@ -1,5 +1,3 @@
-import * as types from '../types/request';
-
 /**
  * Declare API request snippets. This should follow
  * {@link https://api.thesurvey.kr/vi/swagger-ui/index.html}

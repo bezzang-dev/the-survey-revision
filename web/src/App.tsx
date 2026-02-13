@@ -79,7 +79,15 @@ function App() {
           }
         />
         <Route
-          path="/mypage/survey-result/:id"
+          path="/mypage/survey-result"
+          element={
+            <ProtectedRoute>
+              <SurveyResultPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/report"
           element={
             <ProtectedRoute>
               <SurveyResultPage />

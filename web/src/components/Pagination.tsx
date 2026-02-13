@@ -9,21 +9,26 @@ const Container = styled.nav`
 `;
 
 const ButtonList = styled.ul`
-  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  list-style: none;
   padding: 1px;
+  margin: 0;
 `;
 
-const Button = styled.li`
+const Button = styled.button`
   display: inline-flex;
   font-size: 13px;
   font-weight: 700;
   align-items: center;
+  justify-content: center;
   border-radius: 10px;
   border-style: none;
   box-sizing: border-box;
-  height: 25px;
+  min-height: 32px;
+  min-width: 32px;
   padding: 2px 18px;
-  margin: 5px;
   color: ${(props) => props.theme.colors.default};
   cursor: pointer;
   transition: 200ms background ease;
@@ -63,7 +68,7 @@ interface PaginationProps {
 
 export default function Pagination({ currentPage, numOfTotalPage, numOfPageToShow, setPage, theme }: PaginationProps) {
   const [pageListIndex, setPageListIndex] = useState<number>(Math.floor((currentPage - 1) / numOfPageToShow));
-  const pageListLength = Math.floor(numOfTotalPage / numOfPageToShow);
+  const pageListLength = Math.max(Math.ceil(numOfTotalPage / numOfPageToShow) - 1, 0);
 
   const leftButtonClicked = () => {
     if (pageListIndex > 0) {
@@ -80,23 +85,23 @@ export default function Pagination({ currentPage, numOfTotalPage, numOfPageToSho
   return (
     <Container>
       <ButtonList>
-        <ArrowButton theme={theme} onClick={() => leftButtonClicked()}>
+        <ArrowButton type="button" theme={theme} onClick={() => leftButtonClicked()} aria-label="이전 페이지 목록">
           &lt;
         </ArrowButton>
         {NumberUtils.range(1, numOfTotalPage + 1)
           .slice(pageListIndex * numOfPageToShow, pageListIndex * numOfPageToShow + numOfPageToShow)
           .map((index: number) =>
             index === currentPage ? (
-              <SelectedPageButton theme={theme} key={index}>
+              <SelectedPageButton type="button" theme={theme} key={index} aria-current="page">
                 {index}
               </SelectedPageButton>
             ) : (
-              <PageButton theme={theme} key={index} onClick={() => setPage(index)}>
+              <PageButton type="button" theme={theme} key={index} onClick={() => setPage(index)}>
                 {index}
               </PageButton>
             )
           )}
-        <ArrowButton theme={theme} onClick={() => rightButtonClicked()}>
+        <ArrowButton type="button" theme={theme} onClick={() => rightButtonClicked()} aria-label="다음 페이지 목록">
           &gt;
         </ArrowButton>
       </ButtonList>

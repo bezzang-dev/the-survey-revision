@@ -9,7 +9,7 @@ const Container = styled.div`
 
 const InputTitle = styled.span`
   text-align: left;
-  font-size: 1.3vh;
+  font-size: clamp(13px, 1.5vw, 15px);
   font-weight: 600;
   color: ${(props) => props.theme.colors.default};
 `;
@@ -19,18 +19,19 @@ const InputWrapper = styled.div`
   flex-direction: row;
   align-items: center;
   justify-content: center;
+  gap: 8px;
 `;
 
 const Input = styled.input`
-  min-width: 4vh;
-  padding: 1.7vh;
+  min-width: 0;
+  padding: 12px 14px;
   margin-top: 10px;
   margin-bottom: 10px;
   border: ${(props) => props.theme.border};
   border-radius: ${(props) => props.theme.borderRadius};
   color: #4e536a;
   background-color: ${(props) => props.theme.colors.inputBackground};
-  font-size: 1.5vh;
+  font-size: clamp(14px, 1.6vw, 16px);
   font-weight: 600;
   flex: 1;
 
@@ -49,12 +50,10 @@ const Input = styled.input`
 
 const Button = styled.button`
   border: none;
-  min-width: fit-content;
-  width: 10vw;
-  height: 100%;
-  padding: 1.3em;
-  margin-left: 1vh;
-  font-size: 1.4vh;
+  min-width: 90px;
+  height: 44px;
+  padding: 0 16px;
+  font-size: clamp(12px, 1.4vw, 14px);
   font-weight: 700;
   color: ${(props) => props.theme.colors.text};
   background-color: ${(props) => props.theme.colors.button};
@@ -67,10 +66,9 @@ const Button = styled.button`
 `;
 
 const PrefixBox = styled.div`
-  padding: 1.7vh;
-  font-size: 1.5vh;
+  padding: 12px 14px;
+  font-size: clamp(14px, 1.6vw, 16px);
   font-weight: 700;
-  margin-right: 1vh;
   color: #4e536a;
   background-color: ${(props) => props.theme.colors.inputBackground};
   border: ${(props) => props.theme.border};
@@ -115,15 +113,38 @@ interface InputContainerProps {
  *
  * @param {InputContainerProps} props - Props for prefix, input, and button options
  */
-export default function InputContainer(props: InputContainerProps) {
+export default function InputContainer({ title, prefixOptions, inputOptions, buttonOptions }: InputContainerProps) {
+  const inputTheme = inputOptions?.theme ?? prefixOptions?.theme ?? buttonOptions?.theme;
+
   return (
     <Container>
-      <InputTitle theme={props.inputOptions?.theme}>{props.title}</InputTitle>
+      <InputTitle theme={inputTheme}>{title}</InputTitle>
       <InputWrapper>
-        {props.prefixOptions ? <PrefixBox {...props.prefixOptions}>{props.prefixOptions.title}</PrefixBox> : null}
-        <Input {...props.inputOptions} />
-        {props.buttonOptions ? <Button {...props.buttonOptions}>{props.buttonOptions.title}</Button> : null}
+        {prefixOptions ? <PrefixBox theme={prefixOptions.theme}>{prefixOptions.title}</PrefixBox> : null}
+        {inputOptions ? (
+          <Input
+            theme={inputOptions.theme}
+            type={inputOptions.type}
+            name={inputOptions.name}
+            value={inputOptions.value}
+            onChange={inputOptions.onChange}
+            placeholder={inputOptions.placeholder}
+            pattern={inputOptions.pattern}
+            maxLength={inputOptions.maxLength}
+          />
+        ) : null}
+        {buttonOptions ? (
+          <Button theme={buttonOptions.theme} type={buttonOptions.type} onClick={buttonOptions.onClick}>
+            {buttonOptions.title}
+          </Button>
+        ) : null}
       </InputWrapper>
     </Container>
   );
 }
+
+InputContainer.defaultProps = {
+  prefixOptions: undefined,
+  inputOptions: undefined,
+  buttonOptions: undefined,
+};
