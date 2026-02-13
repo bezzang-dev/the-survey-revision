@@ -83,6 +83,7 @@ public class UserCertificationService {
      * This method is a scheduled task that runs every day at midnight
      * (in the "Asia/Seoul" timezone) to delete expired user certifications from the database.
      */
+    @Transactional
     @Scheduled(cron = "0 0 0 * * ?", zone = "Asia/Seoul")
     public void deleteExpiredCertificates() {
         log.info("Deleting expired certifications");
