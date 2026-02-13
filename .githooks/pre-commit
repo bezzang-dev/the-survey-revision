@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -eu
+
+duplicate_java_files="$(git ls-files --cached --others --exclude-standard | grep -E ' [0-9]+\.java$' || true)"
+
+if [ -n "$duplicate_java_files" ]; then
+  echo "Commit blocked: detected duplicate Java filenames with numeric suffixes."
+  echo "Rename or remove these files before committing:"
+  echo "$duplicate_java_files"
+  exit 1
+fi
+
+exit 0
