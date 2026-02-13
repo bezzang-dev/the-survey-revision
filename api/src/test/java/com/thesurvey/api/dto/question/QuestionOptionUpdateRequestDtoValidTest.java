@@ -2,8 +2,8 @@ package com.thesurvey.api.dto.question;
 
 import java.util.Set;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 
 import com.thesurvey.api.controller.SurveyController;
 import com.thesurvey.api.dto.request.question.QuestionOptionUpdateRequestDto;

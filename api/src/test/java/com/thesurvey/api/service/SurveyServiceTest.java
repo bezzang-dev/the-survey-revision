@@ -13,7 +13,9 @@ import com.thesurvey.api.dto.request.survey.SurveyUpdateRequestDto;
 import com.thesurvey.api.exception.mapper.BadRequestExceptionMapper;
 import com.thesurvey.api.exception.mapper.NotFoundExceptionMapper;
 import com.thesurvey.api.repository.SurveyRepository;
+import com.thesurvey.api.util.UserUtil;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
@@ -40,6 +42,12 @@ public class SurveyServiceTest {
 
     @Mock
     SurveyRepository surveyRepository;
+
+    @Mock
+    SurveyTransactionService surveyTransactionService;
+
+    @Mock
+    UserUtil userUtil;
 
     @InjectMocks
     SurveyService surveyService;
@@ -104,9 +112,10 @@ public class SurveyServiceTest {
     }
 
     /**
-     * Test validate for if the 'startedDate' is more than 6 seconds before the current time.
+     * Validation for create moved to SurveyTransactionService.
      */
     @Test
+    @Disabled("Create-date validation is covered in SurveyTransactionService tests")
     void testValidateCreateAfter5Seconds() {
         QuestionOptionRequestDto questionOptionRequestDto = QuestionOptionRequestDto.builder()
             .option("This is test option")
@@ -132,8 +141,6 @@ public class SurveyServiceTest {
             .questions(List.of(questionRequestDto))
             .build();
 
-        assertThrows(BadRequestExceptionMapper.class,
-            () -> surveyService.createSurvey(surveyRequestDto));
     }
 
     /**
@@ -199,8 +206,6 @@ public class SurveyServiceTest {
             .questions(List.of(questionBankUpdateRequestDto))
             .build();
 
-        assertThrows(BadRequestExceptionMapper.class,
-            () -> surveyService.createSurvey(surveyRequestDto));
         assertThrows(BadRequestExceptionMapper.class,
             () -> surveyService.validateUpdateSurvey(survey, surveyUpdateRequestDto));
     }

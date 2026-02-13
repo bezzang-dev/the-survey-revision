@@ -1,26 +1,26 @@
 package com.thesurvey.api.util;
 
 import com.thesurvey.api.domain.User;
+import com.thesurvey.api.exception.ErrorMessage;
+import com.thesurvey.api.exception.mapper.NotFoundExceptionMapper;
 import com.thesurvey.api.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class UserUtil {
 
-    public static UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    public UserUtil(UserRepository userRepository) {
-        UserUtil.userRepository = userRepository;
+    public User getUserFromAuthentication(Authentication authentication) {
+        String name = authentication.getName();
+        return userRepository.findByName(name)
+                .orElseThrow(() -> new NotFoundExceptionMapper(ErrorMessage.USER_NAME_NOT_FOUND, name));
     }
 
-    public static User getUserFromAuthentication(Authentication authentication) {
-        String name = authentication.getPrincipal().toString();
-        return userRepository.findByName(name).orElseThrow();
-    }
-
-    public static Long getUserIdFromAuthentication(Authentication authentication) {
-        String name = authentication.getPrincipal().toString();
-        return userRepository.findByName(name).orElseThrow().getUserId();
+    public Long getUserIdFromAuthentication(Authentication authentication) {
+        return getUserFromAuthentication(authentication).getUserId();
     }
 }

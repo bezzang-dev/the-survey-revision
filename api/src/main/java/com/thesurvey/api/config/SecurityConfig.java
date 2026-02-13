@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -25,7 +25,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -33,7 +33,7 @@ import java.util.Collections;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     private final UserRepository userRepository;
@@ -49,45 +49,42 @@ public class SecurityConfig {
                         authenticationManager(http.getSharedObject(AuthenticationConfiguration.class)), objectMapper, userMapper);
         loginAuthenticationFilter.setFilterProcessesUrl("/auth/login");
 
-        // @formatter:off
         return http
-                .csrf().disable()
-                .cors().and()
-                .authorizeRequests()
-                .antMatchers(
-                        "/configuration/**",
-                        "/swagger-ui.html",
-                        "/swagger-ui/**",
-                        "/docs/**"
-                ).permitAll()
-                .antMatchers("/admin/**").hasAuthority("ADMIN")
-                .antMatchers(HttpMethod.GET, "/surveys").permitAll()
-                .antMatchers("/surveys").authenticated()
-                .antMatchers("/surveys/**").authenticated()
-                .antMatchers("/users/**").authenticated()
-                .antMatchers(HttpMethod.OPTIONS,"/**").permitAll()
-                .anyRequest().permitAll()
-                .and()
-                .formLogin().disable()
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> {})
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/configuration/**",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/docs/**"
+                        ).permitAll()
+                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/surveys").permitAll()
+                        .requestMatchers("/surveys").authenticated()
+                        .requestMatchers("/surveys/**").authenticated()
+                        .requestMatchers("/users/**").authenticated()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .anyRequest().permitAll()
+                )
+                .formLogin(form -> form.disable())
                 .addFilter(loginAuthenticationFilter)
-                .exceptionHandling().authenticationEntryPoint(new AuthenticationEntryPointHandler())
-                .and()
-                .logout()
-                    .logoutUrl("/auth/logout")
-                    .permitAll()
-                    .invalidateHttpSession(true)
-                    .logoutSuccessHandler(logoutSuccessHandler())
-                .and()
-                .sessionManagement()
-                .sessionFixation().changeSessionId()
-                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                .sessionConcurrency(configurer -> {
-                    configurer.maximumSessions(1);
-                    configurer.maxSessionsPreventsLogin(true);
-                })
-                .and()
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(new AuthenticationEntryPointHandler()))
+                .logout(logout -> logout
+                        .logoutUrl("/auth/logout")
+                        .permitAll()
+                        .invalidateHttpSession(true)
+                        .logoutSuccessHandler(logoutSuccessHandler())
+                )
+                .sessionManagement(session -> session
+                        .sessionFixation(sessionFixation -> sessionFixation.changeSessionId())
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .sessionConcurrency(concurrency -> concurrency
+                                .maximumSessions(1)
+                                .maxSessionsPreventsLogin(true)
+                        )
+                )
                 .build();
-        // @formatter:on
     }
 
     @Bean

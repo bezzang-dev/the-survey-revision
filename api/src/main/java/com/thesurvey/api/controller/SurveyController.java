@@ -21,7 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 @Tag(name = "설문조사", description = "Survey Controller")
 @RestController

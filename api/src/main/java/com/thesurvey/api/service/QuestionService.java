@@ -117,7 +117,9 @@ public class QuestionService {
                     StringUtil.trim(questionBankUpdateRequestDto.getDescription()));
 
             if (questionBankUpdateRequestDto.getQuestionType() != null) {
-                questionBank.changeQuestionType(questionBankUpdateRequestDto.getQuestionType());
+                if (questionBankUpdateRequestDto.getQuestionType() != questionBank.getQuestionType()) {
+                    throw new BadRequestExceptionMapper(ErrorMessage.QUESTION_TYPE_CHANGE_NOT_ALLOWED);
+                }
             }
 
             if (questionBankUpdateRequestDto.getIsRequired() != null) {

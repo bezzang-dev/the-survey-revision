@@ -4,8 +4,8 @@ import com.thesurvey.api.dto.CommonTestMethod;
 
 import java.util.Set;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 
 import com.thesurvey.api.controller.SurveyController;
 import com.thesurvey.api.domain.EnumTypeEntity.QuestionType;

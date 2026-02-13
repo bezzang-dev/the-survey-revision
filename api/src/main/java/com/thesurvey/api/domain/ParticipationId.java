@@ -3,7 +3,7 @@ package com.thesurvey.api.domain;
 import java.io.Serializable;
 import java.util.Objects;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 import com.thesurvey.api.domain.EnumTypeEntity.CertificationType;
 import lombok.AccessLevel;

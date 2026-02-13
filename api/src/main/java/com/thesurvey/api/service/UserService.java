@@ -23,6 +23,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final UserUtil userUtil;
 
     @Transactional(readOnly = true)
     public UserResponseDto getUserByName(String name) {
@@ -39,7 +40,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserResponseDto getUserProfile(Authentication authentication) {
         log.info("Fetching user profile for authenticated user");
-        User user = UserUtil.getUserFromAuthentication(authentication);
+        User user = userUtil.getUserFromAuthentication(authentication);
         log.info("User profile fetched for user: {}", user.getEmail());
         return userMapper.toUserResponseDto(user);
     }
@@ -47,7 +48,7 @@ public class UserService {
     @Transactional
     public UserResponseDto updateUserProfile(UserUpdateRequestDto userUpdateRequestDto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = UserUtil.getUserFromAuthentication(authentication);
+        User user = userUtil.getUserFromAuthentication(authentication);
         log.info("Updating profile for user: {}", user.getUserId());
 
         if (userUpdateRequestDto.getPassword() != null) {
@@ -77,7 +78,7 @@ public class UserService {
 
     @Transactional
     public void deleteUser(Authentication authentication) {
-        User user = UserUtil.getUserFromAuthentication(authentication);
+        User user = userUtil.getUserFromAuthentication(authentication);
         log.info("Deleting user: {}", user.getEmail());
         userRepository.delete(user);
         log.info("User deleted: {}", user.getEmail());

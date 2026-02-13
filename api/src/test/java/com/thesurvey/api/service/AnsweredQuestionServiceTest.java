@@ -23,6 +23,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -34,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@Transactional
 @TestInstance(value = Lifecycle.PER_CLASS)
 public class AnsweredQuestionServiceTest {
 
@@ -226,6 +228,111 @@ public class AnsweredQuestionServiceTest {
                 singleChoiceAnsweredQuestion, multipleChoicesAnsweredQuestion))
             .build();
 
+
+        SecurityContextHolder.getContext().setAuthentication(submitUserAuthentication);
+        assertThrows(BadRequestExceptionMapper.class,
+            () -> answeredQuestionService.createAnswer(answeredQuestionRequestDto));
+    }
+
+    @Test
+    void testValidateRequiredQuestionIsMissingFromRequest() {
+        List<QuestionRequestDto> testQuestionList = new ArrayList<>();
+        testQuestionList.add(
+            QuestionRequestDto.builder()
+                .title("required question 1")
+                .description("required question 1 description")
+                .questionNo(1)
+                .questionType(QuestionType.LONG_ANSWER)
+                .isRequired(true)
+                .build()
+        );
+        testQuestionList.add(
+            QuestionRequestDto.builder()
+                .title("required question 2")
+                .description("required question 2 description")
+                .questionNo(2)
+                .questionType(QuestionType.SHORT_ANSWER)
+                .isRequired(true)
+                .build()
+        );
+
+        SurveyRequestDto surveyRequestDto = SurveyRequestDto.builder()
+            .title("required-question-survey")
+            .description("required-question-survey-description")
+            .startedDate(LocalDateTime.parse(LocalDateTime.now(ZoneId.of("Asia/Seoul"))
+                .format(formatter)))
+            .endedDate(LocalDateTime.parse(LocalDateTime.now(ZoneId.of("Asia/Seoul"))
+                .plusDays(2).format(formatter)))
+            .certificationTypes(List.of(CertificationType.NONE))
+            .questions(testQuestionList)
+            .build();
+
+        SecurityContextHolder.getContext().setAuthentication(testAuthentication);
+        SurveyResponseDto surveyResponseDto = surveyService.createSurvey(surveyRequestDto);
+        List<QuestionBankResponseDto> questionResponseList = surveyResponseDto.getQuestions();
+
+        AnsweredQuestionDto answeredQuestionDto = AnsweredQuestionDto.builder()
+            .questionBankId(questionResponseList.get(0).getQuestionBankId())
+            .longAnswer("answer only first required question")
+            .isRequired(true)
+            .questionType(QuestionType.LONG_ANSWER)
+            .build();
+
+        AnsweredQuestionRequestDto answeredQuestionRequestDto = AnsweredQuestionRequestDto.builder()
+            .surveyId(surveyResponseDto.getSurveyId())
+            .answers(List.of(answeredQuestionDto))
+            .build();
+
+        SecurityContextHolder.getContext().setAuthentication(submitUserAuthentication);
+        assertThrows(BadRequestExceptionMapper.class,
+            () -> answeredQuestionService.createAnswer(answeredQuestionRequestDto));
+    }
+
+    @Test
+    void testValidateDuplicatedQuestionAnswerInRequest() {
+        List<QuestionRequestDto> testQuestionList = List.of(
+            QuestionRequestDto.builder()
+                .title("duplicate question")
+                .description("duplicate question description")
+                .questionNo(1)
+                .questionType(QuestionType.LONG_ANSWER)
+                .isRequired(true)
+                .build()
+        );
+
+        SurveyRequestDto surveyRequestDto = SurveyRequestDto.builder()
+            .title("duplicate-answer-survey")
+            .description("duplicate-answer-survey-description")
+            .startedDate(LocalDateTime.parse(LocalDateTime.now(ZoneId.of("Asia/Seoul"))
+                .format(formatter)))
+            .endedDate(LocalDateTime.parse(LocalDateTime.now(ZoneId.of("Asia/Seoul"))
+                .plusDays(2).format(formatter)))
+            .certificationTypes(List.of(CertificationType.NONE))
+            .questions(testQuestionList)
+            .build();
+
+        SecurityContextHolder.getContext().setAuthentication(testAuthentication);
+        SurveyResponseDto surveyResponseDto = surveyService.createSurvey(surveyRequestDto);
+        Long questionBankId = surveyResponseDto.getQuestions().get(0).getQuestionBankId();
+
+        AnsweredQuestionDto firstAnswer = AnsweredQuestionDto.builder()
+            .questionBankId(questionBankId)
+            .longAnswer("first answer")
+            .isRequired(true)
+            .questionType(QuestionType.LONG_ANSWER)
+            .build();
+
+        AnsweredQuestionDto duplicatedAnswer = AnsweredQuestionDto.builder()
+            .questionBankId(questionBankId)
+            .longAnswer("duplicated answer")
+            .isRequired(true)
+            .questionType(QuestionType.LONG_ANSWER)
+            .build();
+
+        AnsweredQuestionRequestDto answeredQuestionRequestDto = AnsweredQuestionRequestDto.builder()
+            .surveyId(surveyResponseDto.getSurveyId())
+            .answers(List.of(firstAnswer, duplicatedAnswer))
+            .build();
 
         SecurityContextHolder.getContext().setAuthentication(submitUserAuthentication);
         assertThrows(BadRequestExceptionMapper.class,

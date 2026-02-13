@@ -5,7 +5,7 @@ import com.thesurvey.api.domain.EnumTypeEntity.CertificationType;
 
 import java.time.LocalDateTime;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 import lombok.AccessLevel;
 import lombok.Builder;
