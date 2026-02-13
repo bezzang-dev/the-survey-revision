@@ -23,8 +23,8 @@ const rotate = keyframes`
 `;
 
 const Container = styled.div`
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100dvh;
   background-color: ${(props) => props.theme.colors.container};
 `;
 
@@ -46,9 +46,9 @@ const AuthenticationContainer = styled.div`
   justify-content: center;
   align-items: center;
   text-align: center;
-  padding: 5vw;
-  min-width: 40vh;
-  height: 80vh;
+  box-sizing: border-box;
+  padding: clamp(20px, 5vw, 48px);
+  min-height: calc(100dvh - 70px);
   background-color: ${(props) => props.theme.colors.container};
 `;
 const TextType = styled.span`

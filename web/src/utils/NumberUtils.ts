@@ -17,23 +17,23 @@ export class NumberUtils<T> extends Array<T> {
    * @param from An index to start from. Starts from`0` if not provided.
    * @param to An index to be ended by. (Excludes this value)
    * @returns {Array<number>} An array of continuous numbers within range.
-   */
+  */
   static range(from: number, to?: number): Array<number> {
-    let _from = 0;
-    let _to = from;
+    let fromIndex = 0;
+    let toIndex = from;
 
     if (to !== undefined) {
-      _from = from;
-      _to = to;
+      fromIndex = from;
+      toIndex = to;
     }
 
-    const _length = _to - _from;
-    const arr: Array<number> = Array<number>(_length);
+    const length = toIndex - fromIndex;
+    const arr: Array<number> = Array<number>(length);
 
-    let counter = _from;
+    let counter = fromIndex;
 
-    while (counter < _to) {
-      arr[counter - _from] = counter;
+    while (counter < toIndex) {
+      arr[counter - fromIndex] = counter;
       counter += 1;
     }
 

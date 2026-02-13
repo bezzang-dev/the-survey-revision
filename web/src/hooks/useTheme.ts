@@ -24,12 +24,18 @@ export const useTheme = (): [DefaultTheme, () => void] => {
   };
 
   const toggleTheme = () => {
-    themeMode === 'light' ? setLocalMode('dark') : setLocalMode('light');
+    if (themeMode === 'light') {
+      setLocalMode('dark');
+    } else {
+      setLocalMode('light');
+    }
   };
 
   useEffect(() => {
     const localTheme = window.localStorage.getItem('theme');
-    localTheme && setThemeMode(localTheme);
+    if (localTheme !== null) {
+      setThemeMode(localTheme);
+    }
   }, []);
 
   useEffect(() => {

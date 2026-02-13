@@ -68,3 +68,9 @@ export default function RectangleButton({
     </Button>
   );
 }
+
+RectangleButton.defaultProps = {
+  fontSize: '18px',
+  fontWeight: '600',
+  disabled: false,
+};

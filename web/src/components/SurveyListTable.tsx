@@ -6,60 +6,46 @@ import { SurveyAbstractResponse } from '../types/response/Survey';
 import { dateFormatUpToDate } from '../utils/dateFormat';
 import CertificationIconList from './CertificationIconList';
 
-const ListTable = styled.table`
-  display: flex;
-  flex-direction: column;
-  padding: 3vh 5vw 1vh 5vw;
+const TableWrapper = styled.div`
+  padding: 24px 5vw 8px 5vw;
+  overflow-x: auto;
   background-color: ${(props) => props.theme.colors.container};
 `;
 
-const ListHead = styled.thead``;
-
-const ListBody = styled.tbody``;
-
-const ListRow = styled.tr`
-  display: flex;
-  flex-direction: row;
+const ListTable = styled.table`
+  width: 100%;
+  min-width: 680px;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0 4px;
 `;
 
 const Item = styled.td`
-  height: 22px;
-  margin: 2px;
-  padding: 18px;
-  padding-bottom: 19px;
-  font-size: 17px;
+  padding: 16px;
+  font-size: 16px;
   font-weight: bold;
   border-radius: 5px;
   color: ${(props) => props.theme.colors.default};
   background-color: ${(props) => props.theme.colors.background};
-  white-space: nowrap;
+  white-space: normal;
   overflow: hidden;
   text-overflow: ellipsis;
 `;
 
 const HeadItem = styled.th`
-  margin: 2px;
-  padding: 18px;
-  font-size: 17px;
+  padding: 10px 16px;
+  font-size: 16px;
   font-weight: bold;
   text-align: center;
   color: ${(props) => props.theme.colors.default};
 `;
 
 const Title = styled(Item)`
-  min-width: 15vh;
-  flex: 1;
-  cursor: pointer;
-  transition: 200ms background ease;
-
-  &:hover {
-    background-color: ${(props) => props.theme.colors.btnhover};
-  }
+  width: 45%;
 `;
 
 const EndDate = styled(Item)`
-  min-width: 150px;
-  width: 13vw;
+  width: 20%;
   text-align: center;
 
   @media screen and (max-width: 900px) {
@@ -68,21 +54,35 @@ const EndDate = styled(Item)`
 `;
 
 const HeadTitle = styled(HeadItem)`
-  min-width: 15vh;
-  flex: 1;
+  width: 45%;
+  text-align: left;
 `;
 
 const HeadAuthList = styled(HeadItem)`
-  min-width: 100px;
-  width: 20vw;
+  width: 35%;
 `;
 
 const HeadEndDate = styled(HeadItem)`
-  min-width: 150px;
-  width: 13vw;
+  width: 20%;
 
   @media screen and (max-width: 900px) {
     display: none;
+  }
+`;
+
+const TitleButton = styled.button`
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
+  transition: 200ms opacity ease;
+
+  &:hover {
+    opacity: 0.75;
   }
 `;
 
@@ -105,33 +105,37 @@ export default function SurveyListTable({
   };
 
   return (
-    <ListTable theme={theme}>
-      <ListHead>
-        <ListRow>
-          <HeadTitle theme={theme}>설문 제목</HeadTitle>
-          <HeadAuthList theme={theme}>필수인증</HeadAuthList>
-          <HeadEndDate theme={theme}>설문 종료일</HeadEndDate>
-        </ListRow>
-      </ListHead>
+    <TableWrapper theme={theme}>
+      <ListTable theme={theme}>
+        <thead>
+          <tr>
+            <HeadTitle theme={theme}>설문 제목</HeadTitle>
+            <HeadAuthList theme={theme}>필수인증</HeadAuthList>
+            <HeadEndDate theme={theme}>설문 종료일</HeadEndDate>
+          </tr>
+        </thead>
 
-      <ListBody>
-        {surveys.map((survey: SurveyAbstractResponse, index: number) => (
-          <ListRow key={survey.surveyId} theme={theme}>
-            <Title role="button" onClick={() => handleButtonClick(index)} theme={theme}>
-              {survey.title}
-            </Title>
-            <Item theme={theme}>
-              <CertificationIconList
-                width="20vw"
-                minWidth="100px"
-                certificationList={survey.certificationTypes}
-                theme={theme}
-              />
-            </Item>
-            <EndDate theme={theme}>{dateFormatUpToDate(`${survey.endedDate}`)}</EndDate>
-          </ListRow>
-        ))}
-      </ListBody>
-    </ListTable>
+        <tbody>
+          {surveys.map((survey: SurveyAbstractResponse, index: number) => (
+            <tr key={survey.surveyId}>
+              <Title theme={theme}>
+                <TitleButton type="button" onClick={() => handleButtonClick(index)}>
+                  {survey.title}
+                </TitleButton>
+              </Title>
+              <Item theme={theme}>
+                <CertificationIconList
+                  width="100%"
+                  minWidth="100px"
+                  certificationList={survey.certificationTypes}
+                  theme={theme}
+                />
+              </Item>
+              <EndDate theme={theme}>{dateFormatUpToDate(`${survey.endedDate}`)}</EndDate>
+            </tr>
+          ))}
+        </tbody>
+      </ListTable>
+    </TableWrapper>
   );
 }

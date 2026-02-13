@@ -1,5 +1,5 @@
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router';
+import { NavigateFunction } from 'react-router-dom';
+import { AnyAction, Dispatch } from 'redux';
 
 import axios from '../api/axios';
 import { requests } from '../api/request';
@@ -29,9 +29,13 @@ import {
  * @param password : Save password for updating information on My Page
  * @param dispatch : Function for updating information on react-redux
  */
-export const setUserInformation = (userdata: any, password: string, dispatch = useDispatch()) => {
+type UserStatePayload = UserResponse & {
+  point?: string | number | null;
+};
+
+export const setUserInformation = (userdata: UserStatePayload, password: string, dispatch: Dispatch<AnyAction>) => {
   dispatch(setUserId(userdata.authorId));
-  dispatch(setUserPoint(userdata.point === undefined ? '0' : userdata.point));
+  dispatch(setUserPoint(userdata.point === undefined || userdata.point === null ? '0' : userdata.point.toString()));
   dispatch(setUserEmail(userdata.email));
   if (password !== 'passwordUndefined') {
     dispatch(setUserPassword(password));
@@ -39,20 +43,20 @@ export const setUserInformation = (userdata: any, password: string, dispatch = u
   dispatch(setUserName(userdata.name));
   dispatch(setPhoneNumber(userdata.phoneNumber));
   dispatch(setUserAddress(userdata.address === null ? '주소를 입력해주세요' : userdata.address));
-  dispatch(setUserProfileImage('https://images2.alphacoders.com/130/1306410.png'));
+  dispatch(setUserProfileImage(userdata.profileImage || 'https://images2.alphacoders.com/130/1306410.png'));
 };
 
 // 마이페이지 이동시 사용자 정보 조회 및 업데이트.
-export const updateUserInformation = async (dispatch = useDispatch(), navigate = useNavigate()) => {
+export const updateUserInformation = async (dispatch: Dispatch<AnyAction>, navigate: NavigateFunction) => {
   const res = await axios.get<UserResponse>(requests.getUserProfile);
   if (res.status === 200) {
     setUserInformation(res.data, 'passwordUndefined', dispatch);
-    navigate('../../mypage');
+    navigate('/mypage');
   }
 };
 
 // if we logout in this service, initialize userData in local.
-export const clearUserInformation = (dispatch = useDispatch()) => {
+export const clearUserInformation = (dispatch: Dispatch<AnyAction>) => {
   // initialize user information.
   dispatch(setUserId(0));
   dispatch(setUserEmail(''));

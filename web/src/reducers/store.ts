@@ -1,9 +1,9 @@
 import { createStore } from 'redux';
 import { persistStore } from 'redux-persist';
 
-import persistedReducer from './index';
+import rootPersistedReducer from './index';
 
-const store = createStore(persistedReducer);
+const store = createStore(rootPersistedReducer);
 const persistor = persistStore(store);
 
 export { store, persistor };

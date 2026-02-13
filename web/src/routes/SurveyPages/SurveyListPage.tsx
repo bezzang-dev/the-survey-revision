@@ -16,8 +16,8 @@ import { SurveyPageResponse } from '../../types/response/Survey';
 import { responseErrorHandle } from '../../utils/responseErrorHandle';
 
 const Container = styled.div`
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100dvh;
   background-color: ${(props) => props.theme.colors.container};
 `;
 

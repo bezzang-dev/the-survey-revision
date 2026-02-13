@@ -11,18 +11,28 @@ const Container = styled.div`
   display: flex;
   align-items: center;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100dvh;
   background-color: ${(props) => props.theme.colors.container};
 `;
 
 const Title = styled.h1`
-  margin-top: 10vh;
+  margin-top: clamp(20px, 8vh, 80px);
+  padding: 0 20px;
+  text-align: center;
   color: ${(props) => props.theme.colors.default};
 `;
 
-const Content = styled.div``;
+const Content = styled.div`
+  width: min(92vw, 900px);
+`;
 
-const Image = styled.img``;
+const Image = styled.img`
+  width: 100%;
+  max-width: 640px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+`;
 
 const ButtonContainer = styled.div`
   display: flex;
@@ -32,7 +42,7 @@ const ButtonContainer = styled.div`
 `;
 
 const Button = styled.button`
-  margin-top: 5vh;
+  margin-top: clamp(24px, 5vh, 40px);
   padding: 1em;
   font-size: 1.2em;
   border: none;

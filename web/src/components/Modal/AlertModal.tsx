@@ -6,27 +6,24 @@ import { Icons } from '../../assets/svg';
 import RectangleButton from '../Button/RectangleButton';
 
 const Container = styled.div`
-  width: 100vw;
-  height: 100vh;
   position: fixed;
+  inset: 0;
   z-index: 100;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 16px;
+  box-sizing: border-box;
+  background-color: rgba(0, 0, 0, 0.45);
 `;
 
 const Modal = styled.div`
-  width: 50vw;
+  width: min(92vw, 560px);
+  max-height: 90dvh;
+  overflow-y: auto;
   box-shadow: 4px 4px 4px 4px rgba(0, 0, 0, 0.25);
   border-radius: ${(props) => props.theme.borderRadius};
   background-color: ${(props) => props.theme.colors.container};
-
-  @media screen and (max-width: 400px) {
-    width: 60vw;
-  }
 `;
 
 const TitleContainer = styled.div`

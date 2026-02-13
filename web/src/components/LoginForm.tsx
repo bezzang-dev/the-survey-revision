@@ -13,19 +13,13 @@ import { isEmptyString } from '../utils/validate';
 import { AlertModal } from './Modal';
 
 const LoginContainer = styled.div`
-  padding: 9vw;
-  margin-left: 20vw;
-  margin-right: 20vw;
-  margin-top: 2vw;
-  height: 50vh;
+  box-sizing: border-box;
+  width: min(92vw, 560px);
+  padding: clamp(24px, 6vw, 48px);
+  margin: clamp(18px, 3vh, 32px) auto 0;
   border-radius: ${(props) => props.theme.borderRadius};
   background-color: ${(props) => props.theme.colors.container};
   box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
-
-  @media screen and (max-width: 800px) {
-    margin-left: 10vw;
-    margin-right: 10vw;
-  }
 `;
 
 const Form = styled.form`
@@ -34,14 +28,16 @@ const Form = styled.form`
 `;
 
 const Input = styled.input`
-  padding: 1.7vh;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px 14px;
   margin-top: 10px;
   margin-bottom: 10px;
   border: ${(props) => props.theme.border};
   border-radius: ${(props) => props.theme.borderRadius};
   color: #4e536a;
   background-color: ${(props) => props.theme.colors.inputBackground};
-  font-size: 1.5vh;
+  font-size: clamp(14px, 1.6vw, 16px);
   font-weight: 600;
   flex: 1;
 
@@ -59,7 +55,7 @@ const Input = styled.input`
 
 const LoginTitle = styled.span`
   text-align: left;
-  font-size: 5vh;
+  font-size: clamp(30px, 5vw, 44px);
   font-weight: 900;
   color: ${(props) => props.theme.colors.default};
 `;
@@ -67,7 +63,7 @@ const LoginTitle = styled.span`
 const FontText = styled.span`
   margin-top: 5px;
   text-align: left;
-  font-size: 1.3vh;
+  font-size: clamp(13px, 1.5vw, 15px);
   font-weight: 600;
   color: ${(props) => props.theme.colors.default};
 `;
@@ -77,13 +73,12 @@ interface ButtonProps {
 }
 
 const Button = styled.button<ButtonProps>`
-  margin-top: 1vh;
+  margin-top: 10px;
   border: none;
-  padding: 2vh;
-  padding-left: 8vw;
-  padding-right: 8vw;
+  width: 100%;
+  padding: 12px;
   border-radius: ${(props) => props.theme.borderRadius};
-  font-size: 2vh;
+  font-size: clamp(14px, 1.7vw, 17px);
   font-weight: 700;
   color: ${(props) => props.theme.colors.text};
   background-color: ${(props) => props.theme.colors.button};
@@ -121,9 +116,7 @@ export default function LoginForm({ theme }: LoginFormProps) {
     e.preventDefault();
 
     if (!checkLoginInput()) {
-      setAlertTitle('로그인 오류');
-      setAlertText('아이디 또는 비밀번호를 확인해주세요.');
-      setShowAlertModal(true);
+      return;
     }
 
     const loginRequestBody = { email, password };
@@ -137,7 +130,7 @@ export default function LoginForm({ theme }: LoginFormProps) {
         }
       })
       .catch((error) => {
-        if (error.request.status === 404) {
+        if (error?.response?.status === 404) {
           setAlertTitle('로그인 오류');
           setAlertText('아이디 또는 비밀번호를 확인해주세요.');
           setShowAlertModal(true);

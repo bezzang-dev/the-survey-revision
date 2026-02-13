@@ -1,11 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled, { DefaultTheme } from 'styled-components';
 
 import { useOnClickOutside } from '../../hooks/useOnClickOutside';
-import { RootState } from '../../reducers';
 import { SurveyAbstractResponse } from '../../types/response/Survey';
 import { dateFormatUpToMinute, getDDay, getTimeRemaining } from '../../utils/dateFormat';
 import { validateStartDate } from '../../utils/validate';
@@ -127,8 +125,6 @@ export default function SurveyPreviewModal({ surveyItem, setPreviewModalOpen, th
   const navigate = useNavigate();
   const modalRef = useRef<HTMLDivElement>(null);
   const [isSurveyStart, setIsSurveyStart] = useState<boolean>(true);
-  const [isAuthor, setIsAuthor] = useState<boolean>(false);
-  const userState = useSelector((state: RootState) => state.userInformation);
   const [buttonText, setButtonText] = useState('설문 조사 참여하기');
 
   useOnClickOutside({

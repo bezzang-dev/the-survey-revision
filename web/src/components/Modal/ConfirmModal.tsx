@@ -6,27 +6,24 @@ import { Icons } from '../../assets/svg';
 import RectangleButton from '../Button/RectangleButton';
 
 const Container = styled.div`
-  width: 100vw;
-  height: 100vh;
   position: fixed;
+  inset: 0;
   z-index: 100;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 16px;
+  box-sizing: border-box;
+  background-color: rgba(0, 0, 0, 0.45);
 `;
 
 const Modal = styled.div`
-  width: 35vw;
+  width: min(92vw, 520px);
+  max-height: 90dvh;
+  overflow-y: auto;
   box-shadow: 4px 4px 4px 4px rgba(0, 0, 0, 0.25);
   border-radius: ${(props) => props.theme.borderRadius};
   background-color: ${(props) => props.theme.colors.container};
-
-  @media screen and (max-width: 400px) {
-    width: 60vw;
-  }
 `;
 
 const TitleContainer = styled.div`
@@ -51,7 +48,9 @@ const BodyContainer = styled.div`
 const ButtonContainer = styled.div`
   display: flex;
   flex-direction: row;
-  justify-content: space-around;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
 `;
 
 const TextContainer = styled.span`
@@ -129,7 +128,7 @@ export default function ConfirmModal({
               text="취소"
               theme={theme}
               handleClick={handleCancelClick}
-              width="15vw"
+              width="min(180px, 40vw)"
             />
             <RectangleButton
               textColor="white"
@@ -138,7 +137,7 @@ export default function ConfirmModal({
               text="확인"
               theme={theme}
               handleClick={handleConfirmClick}
-              width="15vw"
+              width="min(180px, 40vw)"
             />
           </ButtonContainer>
         </BodyContainer>

@@ -10,8 +10,8 @@ import RectangleButton from './Button/RectangleButton';
 import Header from './Header';
 
 const Container = styled.div`
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100dvh;
   background-color: ${(props) => props.theme.colors.container};
 `;
 
@@ -20,15 +20,17 @@ const Notification = styled.div`
   flex-direction: column;
   align-items: center;
   text-align: center;
-  margin-top: 35vh;
-  padding: 10px;
+  justify-content: center;
+  flex: 1;
+  padding: 10px 0;
 `;
 
-const Label = styled.label`
-  font-size: 50px;
+const Label = styled.p`
+  font-size: clamp(28px, 4vw, 46px);
   font-weight: 700;
   color: ${(props) => props.theme.colors.default};
   text-align: center;
+  margin: 0;
 
   @media screen and (max-width: 700px) {
     font-size: 30px;
@@ -36,9 +38,11 @@ const Label = styled.label`
 `;
 
 const ErrorContainer = styled.div`
-  padding: 5vw;
-  min-width: 40vh;
-  height: 80vh;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - 70px);
+  box-sizing: border-box;
+  padding: clamp(20px, 5vw, 48px);
   flex-direction: column;
   background-color: ${(props) => props.theme.colors.container};
 `;
@@ -48,9 +52,12 @@ const ErrorPageTitle = styled.div`
   margin-bottom: 2vh;
 `;
 
-const MypageText = styled.span`
+const MypageText = styled.button`
+  border: none;
+  background: transparent;
+  padding: 0;
   text-align: left;
-  font-size: calc(2vh + 2vmin);
+  font-size: clamp(22px, 3vw, 36px);
   font-weight: 900;
   color: ${(props) => props.theme.colors.default};
   cursor: pointer;
@@ -58,7 +65,7 @@ const MypageText = styled.span`
 
 const SurveyResultText = styled.span`
   text-align: left;
-  font-size: calc(2vh + 2vmin);
+  font-size: clamp(22px, 3vw, 36px);
   font-weight: 900;
   color: ${(props) => props.theme.colors.default};
 `;
@@ -88,7 +95,7 @@ export default function ErrorPage({ labelText, buttonText, navigateRoute, theme,
       <ErrorContainer theme={theme}>
         {labelText === '앗! 아직 설문을 만들지 않았어요.' && (
           <ErrorPageTitle style={{ marginBottom: '5vh' }} theme={theme}>
-            <MypageText theme={theme} onClick={() => updateUserInformation(dispatch, navigate)}>
+            <MypageText type="button" theme={theme} onClick={() => updateUserInformation(dispatch, navigate)}>
               마이페이지
             </MypageText>
             <SurveyResultText theme={theme}> &gt; 설문 결과 조회</SurveyResultText>
@@ -96,7 +103,6 @@ export default function ErrorPage({ labelText, buttonText, navigateRoute, theme,
         )}
         <Notification theme={theme}>
           <Label theme={theme}>{`😥 ${labelText}..`}</Label>
-          <br />
           <RectangleButton
             text={buttonText}
             textColor="white"

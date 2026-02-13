@@ -37,7 +37,7 @@ export const dateFormatUpToDate = (date: string): string => {
 export const getDDay = (dDate: string | Date): number => {
   const dateDiff = new Date(dDate).getTime() - new Date().getTime();
 
-  return Math.floor(Math.abs(dateDiff / (1000 * 60 * 60 * 24)));
+  return Math.floor(dateDiff / (1000 * 60 * 60 * 24));
 };
 
 /**

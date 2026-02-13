@@ -17,16 +17,13 @@ import HeaderModal from './Modal/HeaderModal';
 const HeaderContainer = styled.header<{ isTransitionEnabled: boolean }>`
   z-index: 100;
   position: sticky;
+  top: 0;
   height: 70px;
-  width: 100vw;
+  width: 100%;
   display: flex;
   flex-direction: row;
   background-color: ${(props) => props.theme.colors.header};
   transition: ${(props) => (props.isTransitionEnabled ? 'background-color 300ms linear' : 'none')};
-  -webkit-transition: ${(props) => (props.isTransitionEnabled ? 'background-color 300ms linear' : 'none')};
-  -ms-transition: ${(props) => (props.isTransitionEnabled ? 'background-color 300ms linear' : 'none')};
-  -o-transition: ${(props) => (props.isTransitionEnabled ? 'background-color 300ms linear' : 'none')};
-  -ms-transition: ${(props) => (props.isTransitionEnabled ? 'background-color 300ms linear' : 'none')};
 `;
 
 const LogoWrapper = styled.div`
@@ -35,11 +32,22 @@ const LogoWrapper = styled.div`
   align-items: center;
 `;
 
+const IconButton = styled.button`
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 999px;
+`;
+
 const LogoLightContainer = styled(Icons.LIGHT_LOGO)`
-  margin-left: 2vw;
+  margin-left: clamp(10px, 2vw, 24px);
   width: 130px;
   height: fit-content;
-  cursor: pointer;
 
   @media only screen and (max-width: 700px) {
     display: none;
@@ -47,10 +55,9 @@ const LogoLightContainer = styled(Icons.LIGHT_LOGO)`
 `;
 
 const LogoDarkContainer = styled(Icons.DARK_LOGO)`
-  margin-left: 2vw;
+  margin-left: clamp(10px, 2vw, 24px);
   width: 130px;
   height: fit-content;
-  cursor: pointer;
 
   @media only screen and (max-width: 700px) {
     display: none;
@@ -58,23 +65,22 @@ const LogoDarkContainer = styled(Icons.DARK_LOGO)`
 `;
 
 const FaviconContainer = styled(Icons.FAVICON)`
-  margin-left: 3vw;
+  margin-left: clamp(12px, 3vw, 24px);
   width: 40px;
   height: fit-content;
-  cursor: pointer;
 
   @media only screen and (min-width: 700px) {
     display: none;
   }
 `;
 
-const UserImage = styled(Icons.USERIMAGE)`
-  margin: 1vw;
+const UserImageIcon = styled(Icons.USERIMAGE)`
   width: 40px;
   height: fit-content;
-  cursor: pointer;
-  border: none;
-  border-radius: 30px;
+`;
+
+const UserImage = styled(IconButton)`
+  margin: clamp(6px, 1vw, 14px);
 `;
 
 const CheckBoxContainer = styled.div`
@@ -117,6 +123,7 @@ const CheckBox = styled.input`
   border-radius: ${(props) => props.theme.borderRadius};
   width: 60px;
   height: 30px;
+  cursor: pointer;
 
   &:checked + ${CheckBoxLabel} {
     background-color: ${(props) => props.theme.colors.button};
@@ -147,26 +154,31 @@ const NavigatorContainer = styled.ul`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 2vw;
+  gap: clamp(6px, 2vw, 24px);
   list-style-type: none;
   margin: 0;
   padding: 0;
   flex: 1;
 `;
 
-const Navigator = styled.li`
-  font-size: calc(1.5vh + 0.5vmin);
+const Navigator = styled.button`
+  font-size: clamp(14px, 1.2vw, 18px);
   font-weight: 600;
   cursor: pointer;
-  padding: 1vw;
+  padding: 10px;
+  border: none;
+  border-radius: ${(props) => props.theme.borderRadius};
+  color: ${(props) => props.theme.colors.default};
+  background: transparent;
+  white-space: nowrap;
+  transition: opacity 0.15s ease-in-out;
 
   &:hover {
     opacity: 0.5;
-    transition: all 0.15s ease-in-out;
   }
 `;
 
-const LoginInformation = styled.div`
+const LoginInformation = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -174,7 +186,7 @@ const LoginInformation = styled.div`
   font-weight: 800;
   color: ${(props) => props.theme.colors.text};
   margin: 10px;
-  margin-right: 2vw;
+  margin-right: clamp(8px, 2vw, 20px);
   border: none;
   border-radius: ${(props) => props.theme.borderRadius};
   padding: 0.8em;
@@ -186,11 +198,11 @@ const LoginInformation = styled.div`
   }
 `;
 
-const CustomButton = styled.div`
-  margin: 1vw;
+const CustomButton = styled.button`
+  margin: clamp(6px, 1vw, 14px);
   display: flex;
-  padding: 1vh;
-  font-size: 1.7vh;
+  padding: 8px 12px;
+  font-size: clamp(12px, 1vw, 15px);
   font-weight: 700;
   color: white;
   background-color: ${(props) => props.theme.colors.primary};
@@ -230,10 +242,13 @@ export default function Header({ theme, toggleTheme }: HeaderProps) {
   // FIXME: Update user information value [ password, phoneNumber, address, profileImage ]
   const updateUserInformation = async () => {
     const profileUpdateBody = { password, phoneNumber, address, profileImage };
-    const res = await axios.patch<UserUpdateRequest>(requests.updateUserProfile, profileUpdateBody);
-    if (res.status === 200) {
-      console.log('update Success!');
-    } else if (res.status === 401) {
+    try {
+      const res = await axios.patch<UserUpdateRequest>(requests.updateUserProfile, profileUpdateBody);
+      if (res.status === 401) {
+        dispatch(setLoggedIn(false));
+        navigate('../');
+      }
+    } catch {
       dispatch(setLoggedIn(false));
       navigate('../');
     }
@@ -244,36 +259,50 @@ export default function Header({ theme, toggleTheme }: HeaderProps) {
   return (
     <HeaderContainer theme={theme} isTransitionEnabled={isTransitionEnabled}>
       <LogoWrapper>
-        <LogoContainer onClick={() => navigate('/')} title="logo" />
-        <FaviconContainer onClick={() => navigate('/')} title="logo" />
+        <IconButton type="button" onClick={() => navigate('/')} aria-label="홈으로 이동">
+          <LogoContainer aria-hidden />
+        </IconButton>
+        <IconButton type="button" onClick={() => navigate('/')} aria-label="홈으로 이동">
+          <FaviconContainer aria-hidden />
+        </IconButton>
       </LogoWrapper>
       <NavigatorContainer theme={theme}>
-        <Navigator onClick={() => navigate('../survey')}>설문</Navigator>
-        <Navigator onClick={() => navigate('../report')}>리포트</Navigator>
+        <li>
+          <Navigator type="button" theme={theme} onClick={() => navigate('/survey')}>
+            설문
+          </Navigator>
+        </li>
+        <li>
+          <Navigator type="button" theme={theme} onClick={() => navigate('/report')}>
+            리포트
+          </Navigator>
+        </li>
       </NavigatorContainer>
 
       <ButtonContainer>
         <CheckBoxContainer>
           <CheckBoxWrapper>
-            <CheckBox id="checkbox" type="checkbox" theme={theme} onClick={handleClick} />
-            <CheckBoxLabel htmlFor="checkbox" theme={theme} />
+            <CheckBox id="theme-toggle" type="checkbox" theme={theme} onChange={handleClick} aria-label="테마 전환" />
+            <CheckBoxLabel htmlFor="theme-toggle" theme={theme} />
           </CheckBoxWrapper>
 
           {currentLocation === '/mypage' || currentLocation === '/mypage/' ? (
-            <CustomButton theme={theme} onClick={updateUserInformation}>
+            <CustomButton type="button" theme={theme} onClick={updateUserInformation}>
               개인정보 저장하기
             </CustomButton>
           ) : undefined}
           {currentLocation === '/survey' || currentLocation === '/survey/' ? (
-            <CustomButton theme={theme} onClick={() => navigate('/survey/form')}>
+            <CustomButton type="button" theme={theme} onClick={() => navigate('/survey/form')}>
               설문 만들기
             </CustomButton>
           ) : undefined}
 
           {isLoggedIn ? (
-            <UserImage onClick={() => dispatch(setSubPageOpen(!isSubPageOpen))} />
+            <UserImage type="button" onClick={() => dispatch(setSubPageOpen(!isSubPageOpen))} aria-label="사용자 메뉴 열기">
+              <UserImageIcon aria-hidden />
+            </UserImage>
           ) : (
-            <LoginInformation onClick={() => navigate('/login')} theme={theme}>
+            <LoginInformation type="button" onClick={() => navigate('/login')} theme={theme}>
               로그인/회원가입
             </LoginInformation>
           )}

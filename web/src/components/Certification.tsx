@@ -65,16 +65,14 @@ const AuthNone = styled(Icons.FREE).attrs({
 const Label = styled.label``;
 
 interface CertificationProps {
-  label?: CertificationType;
+  label: CertificationType;
   iconOption: boolean;
   theme: DefaultTheme;
 }
 
 export default function Certification({ label, iconOption, theme }: CertificationProps) {
   let tmpLabel: number | string;
-  if (typeof label === 'undefined') {
-    tmpLabel = -1;
-  } else if (typeof label === 'string') {
+  if (typeof label === 'string') {
     tmpLabel = CertificationType[label];
   } else {
     tmpLabel = label;

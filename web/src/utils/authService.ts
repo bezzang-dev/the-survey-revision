@@ -1,10 +1,14 @@
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { Dispatch as ReactDispatch, SetStateAction } from 'react';
+
+import { NavigateFunction } from 'react-router-dom';
+import { AnyAction, Dispatch } from 'redux';
 
 import axios from '../api/axios';
 import { requests } from '../api/request';
 import { UserAuthListUpdateRequest } from '../types/request';
+import { UserAuthInformation, UserAuthListResponse } from '../types/response/User';
 import {
+  SurveyAuthState,
   setAuthKakao,
   setAuthGoogle,
   setAuthNaver,
@@ -16,11 +20,17 @@ import {
   setSuccessAuth,
 } from '../types/surveyAuth';
 import { KAKAO_AUTH_URL, getKakaoUserData } from './auth/kakaoAuth';
+import { NAVER_AUTH_URL, getNaverUserData } from './auth/naverAuth';
 
 // 인증여부 초기화 - authlist api connect
-export const initializeAuthList = (resData: any, dispatch = useDispatch()) => {
-  if (resData.certificationInfolist !== null) {
-    resData.certificationInfoList.forEach((certification: any) => {
+export const initializeAuthList = (
+  resData: UserAuthListResponse & { certificationInfoList?: UserAuthInformation[] },
+  dispatch: Dispatch<AnyAction>
+) => {
+  const certificationInfoList = resData.certificationInfolist ?? resData.certificationInfoList;
+
+  if (certificationInfoList !== null && certificationInfoList !== undefined) {
+    certificationInfoList.forEach((certification: UserAuthInformation) => {
       const name = certification.certificationName;
       const checkCertificated = certification.isCertificated;
       if (checkCertificated === true) {
@@ -52,16 +62,23 @@ export const initializeAuthList = (resData: any, dispatch = useDispatch()) => {
 };
 
 // FIXME: 다른 사용자 인증 과정 추가 구현하기.
-export const authConnect = (checkAuthServiceTitle: string, setConnectService: any, dispatch = useDispatch()) => {
+export const authConnect = (
+  checkAuthServiceTitle: string,
+  setConnectService: ReactDispatch<SetStateAction<boolean>>,
+  dispatch: Dispatch<AnyAction>
+) => {
   setConnectService(true);
   switch (checkAuthServiceTitle) {
     case '카카오':
       window.location.href = KAKAO_AUTH_URL;
       break;
     case '네이버':
-      // TODO: window.location.href = NAVER_AUTH_URL;
-      dispatch(setSuccessAuth(true));
-      dispatch(setCompleteAuth(true));
+      if (NAVER_AUTH_URL) {
+        window.location.href = NAVER_AUTH_URL;
+      } else {
+        dispatch(setSuccessAuth(false));
+        dispatch(setCompleteAuth(true));
+      }
       break;
     case '구글':
       dispatch(setSuccessAuth(true));
@@ -92,16 +109,14 @@ export const getApiUserInformation = (
   checkAuthServiceTitle: string,
   authCode: string,
   username: string,
-  dispatch = useDispatch()
+  dispatch: Dispatch<AnyAction>
 ) => {
   switch (checkAuthServiceTitle) {
     case '카카오':
       getKakaoUserData(authCode, username, dispatch);
       break;
     case '네이버':
-      // getNaverUserData(authCode, username, dispatch);
-      dispatch(setSuccessAuth(true));
-      dispatch(setCompleteAuth(true));
+      getNaverUserData(authCode, username, dispatch);
       break;
     case '구글':
       break;
@@ -119,9 +134,9 @@ export const getApiUserInformation = (
 // 사용자 정보 조회가 일치하면 인증성공(완료) => 인증여부 변경 및 api connect
 export const authComplete = async (
   checkAuthServiceTitle: string,
-  surveyAuthState: any,
-  dispatch = useDispatch(),
-  navigate = useNavigate()
+  surveyAuthState: SurveyAuthState,
+  dispatch: Dispatch<AnyAction>,
+  navigate: NavigateFunction
 ) => {
   const updateAuthListBody: UserAuthListUpdateRequest = {
     isKakaoCertificated: surveyAuthState.kakao,
@@ -170,7 +185,7 @@ export const authComplete = async (
   navigate('../mypage/auth-list');
 
   const res = await axios.patch<UserAuthListUpdateRequest>(requests.updateUserAuthList, updateAuthListBody);
-  if (res.status === 200) {
-    console.log('getUserData Success!');
+  if (res.status !== 200) {
+    dispatch(setCompleteAuth(false));
   }
 };

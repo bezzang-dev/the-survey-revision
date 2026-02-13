@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { useQuery } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -27,62 +26,51 @@ const TwoArrow = styled(Icons.TWOARROW).attrs({
   align-items: center;
   justify-content: center;
   border: none;
-  padding: 1.5vh;
+  padding: 14px;
   border-radius: 30px;
   transition: transform 0.2s ease-in-out;
 `;
 
 const Container = styled.div`
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100dvh;
   background-color: ${(props) => props.theme.colors.container};
 `;
 
 const ListBoxContainer = styled.div`
-  position: relative;
-  margin-bottom: 1vh;
-  background-color: ${(props) => props.theme.colors.container};
+  margin-bottom: 14px;
   border: ${(props) => props.theme.borderResultList};
   border-radius: ${(props) => props.theme.borderRadius};
   background-color: ${(props) => props.theme.colors.opposite};
 `;
 
 const SurveyResultContainer = styled.div`
-  padding: 5vw;
-  min-width: 40vh;
-  height: 80vh;
+  box-sizing: border-box;
+  padding: clamp(20px, 5vw, 48px);
+  min-height: calc(100dvh - 70px);
   background-color: ${(props) => props.theme.colors.container};
 `;
 
-const ListBox = styled.div`
+const ListBoxButton = styled.button`
   z-index: 1;
   display: flex;
   width: 100%;
   flex-direction: row;
   align-items: center;
-  border: ${(props) => props.theme.borderResultList};
+  border: none;
+  padding: 0;
   border-radius: ${(props) => props.theme.borderRadius};
   background-color: ${(props) => props.theme.colors.opposite};
-  box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.4);
+  box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.22);
   cursor: pointer;
 `;
 
-const ResultBox = styled.div`
-  height: 40vh;
-  width: 91%;
-  max-width: 91%;
-  flex-direction: row;
-  align-items: center;
-  box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.4);
-  pointer-events: none;
-  margin-top: 1.5vh;
-  transition: opacity 0.4s ease-in-out;
-  position: absolute;
-  padding: 4vw;
-  top: 100%;
-  border: ${(props) => props.theme.borderResultList};
-  border-radius: ${(props) => props.theme.borderRadius};
-  background-color: ${(props) => props.theme.colors.opposite};
+const ResultBox = styled.div<{ isOpen: boolean }>`
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+  max-height: ${(props) => (props.isOpen ? '700px' : '0')};
+  opacity: ${(props) => (props.isOpen ? 1 : 0)};
+  padding: ${(props) => (props.isOpen ? '16px' : '0 16px')};
 `;
 
 const SurveyForm = styled.form`
@@ -91,16 +79,20 @@ const SurveyForm = styled.form`
 `;
 
 const SurVeyResultPageTitle = styled.div`
+  display: flex;
   flex-direction: row;
-  margin-bottom: 2vh;
+  margin-bottom: 5vh;
 `;
 
-const MypageText = styled.span`
+const BreadcrumbButton = styled.button`
   text-align: left;
   font-size: calc(2vh + 2vmin);
   font-weight: 900;
   color: ${(props) => props.theme.colors.default};
   cursor: pointer;
+  border: none;
+  background: transparent;
+  padding: 0;
 `;
 
 const SurveyResultText = styled.span`
@@ -116,7 +108,6 @@ const FontText = styled.span`
   font-weight: 900;
   margin-left: 3vw;
   min-width: 80px;
-  max-width: 100vw;
   width: 100%;
   color: ${(props) => props.theme.colors.default};
   white-space: nowrap;
@@ -126,8 +117,10 @@ const FontText = styled.span`
 
 export default function SurveyResultPage() {
   const [theme, toggleTheme] = useTheme();
-  const [isSurveyResultClicked, setIsSurveyResultClicked] = useState([false]);
-  const [surveyResult, setSurveyResult] = useState<SurveyResultResponse>();
+  const [openedSurveyId, setOpenedSurveyId] = useState<string | null>(null);
+  const [loadingSurveyId, setLoadingSurveyId] = useState<string | null>(null);
+  const [resultsById, setResultsById] = useState<Record<string, SurveyResultResponse>>({});
+  const [errorById, setErrorById] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -135,34 +128,41 @@ export default function SurveyResultPage() {
     event.preventDefault();
   };
 
-  const handleClick = async (item: any, index: number) => {
-    setIsSurveyResultClicked((state) => ({
-      ...state,
-      [index]: !state[index],
-    }));
-    axios
-      .get<SurveyResultResponse>(`${requests.getSurveyResultData}${item.surveyId}`)
-      .then((res) => {
-        if (res.status === 200) {
-          console.log(res.data);
-          setSurveyResult(res.data);
-        }
-      })
-      .catch((error) => {
-        console.log(error.requests.status);
-      });
+  const handleClick = async (surveyId: string) => {
+    const isSameSurvey = openedSurveyId === surveyId;
+
+    if (isSameSurvey) {
+      setOpenedSurveyId(null);
+      return;
+    }
+
+    setOpenedSurveyId(surveyId);
+
+    if (resultsById[surveyId]) {
+      return;
+    }
+
+    setLoadingSurveyId(surveyId);
+    setErrorById((prev) => ({ ...prev, [surveyId]: '' }));
+
+    try {
+      const res = await axios.get<SurveyResultResponse>(`${requests.getSurveyResultData}${surveyId}`);
+      if (res.status === 200) {
+        setResultsById((prev) => ({ ...prev, [surveyId]: res.data }));
+      }
+    } catch {
+      setErrorById((prev) => ({ ...prev, [surveyId]: '설문 결과를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.' }));
+    } finally {
+      setLoadingSurveyId((prev) => (prev === surveyId ? null : prev));
+    }
   };
 
-  const { data, isLoading, isError, error } = useQuery<SurveyResultListResponse[]>(
-    ['SurveyResultList'],
-    fetchSurveyResultList,
-    {
-      cacheTime: 5 * 60 * 1000, // 5 minutes
-      staleTime: 20 * 1000, // 20 seconds
-      retry: 1,
-      refetchOnWindowFocus: false,
-    }
-  );
+  const { data, isLoading, isError } = useQuery<SurveyResultListResponse[]>(['SurveyResultList'], fetchSurveyResultList, {
+    cacheTime: 5 * 60 * 1000,
+    staleTime: 20 * 1000,
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
 
   if (isLoading) {
     return <LoadingForm />;
@@ -185,34 +185,37 @@ export default function SurveyResultPage() {
       <Header theme={theme} toggleTheme={toggleTheme} />
       <SurveyResultContainer theme={theme}>
         <SurveyForm onSubmit={handleSubmit}>
-          <SurVeyResultPageTitle style={{ marginBottom: '5vh' }} theme={theme}>
-            <MypageText theme={theme} onClick={() => updateUserInformation(dispatch, navigate)}>
+          <SurVeyResultPageTitle theme={theme}>
+            <BreadcrumbButton type="button" theme={theme} onClick={() => updateUserInformation(dispatch, navigate)}>
               마이페이지
-            </MypageText>
+            </BreadcrumbButton>
             <SurveyResultText theme={theme}> &gt; 설문 결과 조회</SurveyResultText>
           </SurVeyResultPageTitle>
-          {data?.map((item, index) => (
-            <ListBoxContainer key={item.surveyId} theme={theme}>
-              <ListBox theme={theme} onClick={() => handleClick(item, index)}>
-                <FontText theme={theme}>{item.title}</FontText>
-                <TwoArrow
-                  style={{
-                    transform: isSurveyResultClicked[index] ? 'rotate(90deg)' : 'rotate(0deg)',
-                  }}
-                />
-              </ListBox>
+          {data.map((item) => {
+            const isOpen = openedSurveyId === item.surveyId;
 
-              <ResultBox
-                theme={theme}
-                style={{
-                  opacity: isSurveyResultClicked[index] ? 1 : 0,
-                  zIndex: isSurveyResultClicked[index] ? 1 : -1,
-                }}
-              >
-                <SurveyResultBox theme={theme} />
-              </ResultBox>
-            </ListBoxContainer>
-          ))}
+            return (
+              <ListBoxContainer key={item.surveyId} theme={theme}>
+                <ListBoxButton type="button" theme={theme} onClick={() => handleClick(item.surveyId)}>
+                  <FontText theme={theme}>{item.title}</FontText>
+                  <TwoArrow
+                    style={{
+                      transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                    }}
+                  />
+                </ListBoxButton>
+
+                <ResultBox theme={theme} isOpen={isOpen}>
+                  <SurveyResultBox
+                    theme={theme}
+                    surveyResult={resultsById[item.surveyId]}
+                    isLoading={loadingSurveyId === item.surveyId}
+                    errorText={errorById[item.surveyId]}
+                  />
+                </ResultBox>
+              </ListBoxContainer>
+            );
+          })}
         </SurveyForm>
       </SurveyResultContainer>
     </Container>
