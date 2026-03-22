@@ -6,6 +6,7 @@ import org.redisson.config.Config;
 import org.redisson.spring.cache.CacheConfig;
 import org.redisson.spring.cache.RedissonSpringCacheManager;
 import org.redisson.spring.data.connection.RedissonConnectionFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -23,16 +24,22 @@ import java.util.concurrent.TimeUnit;
 @Profile("!test")
 public class RedissonConfig {
 
+    @Value("${spring.data.redis.host:localhost}")
+    private String redisHost;
+
+    @Value("${spring.data.redis.port:6379}")
+    private int redisPort;
+
     @Bean
-    public RedissonConnectionFactory redissonConnectionFactory(RedissonClient redisson) {
+    RedissonConnectionFactory redissonConnectionFactory(RedissonClient redisson) {
         return new RedissonConnectionFactory(redisson);
     }
 
     @Bean
-    public RedissonClient redissonClient() {
+    RedissonClient redissonClient() {
         Config config = new Config();
         config.useSingleServer()
-                .setAddress("redis://127.0.0.1:6379");
+                .setAddress(String.format("redis://%s:%d", redisHost, redisPort));
 //        config.useSentinelServers()
 //                .setMasterName("mymaster")
 //                .addSentinelAddress("redis://127.0.0.1:26379", "redis://127.0.0.1:26380", "redis://127.0.0.1:26381");
@@ -44,8 +51,12 @@ public class RedissonConfig {
     CacheManager cacheManager(RedissonClient redissonClient) {
         Map<String, CacheConfig> config = new HashMap<>();
         config.put("surveyListCache", new CacheConfig(
-                TimeUnit.HOURS.toMillis(1), // TTL 1 hour
-                TimeUnit.MINUTES.toMillis(30) // Max idle time 30 minutes
+                TimeUnit.HOURS.toMillis(1),      // TTL 1 hour
+                TimeUnit.MINUTES.toMillis(30)    // Max idle time 30 minutes
+        ));
+        config.put("surveyCache", new CacheConfig(
+                TimeUnit.MINUTES.toMillis(30),   // TTL 30 minutes
+                TimeUnit.MINUTES.toMillis(10)    // Max idle time 10 minutes
         ));
         return new RedissonSpringCacheManager(redissonClient, config);
     }

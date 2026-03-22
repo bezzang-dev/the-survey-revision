@@ -14,6 +14,6 @@ public class TestCacheConfig {
 
     @Bean
     public CacheManager cacheManager() {
-        return new ConcurrentMapCacheManager("surveyListCache");
+        return new ConcurrentMapCacheManager("surveyListCache", "surveyCache");
     }
 }

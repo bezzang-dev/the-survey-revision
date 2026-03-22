@@ -25,4 +25,7 @@ public interface SurveyRepository extends JpaRepository<Survey, Long> {
     @Query("SELECT s FROM Survey s WHERE s.authorId = :authorId ORDER BY s.createdDate DESC")
     List<Survey> findUserCreatedSurveysByAuthorID(@Param("authorId") Long authorId);
 
+    @Query("SELECT COUNT(s) FROM Survey s WHERE s.endedDate > CURRENT_TIMESTAMP AND s.createdDate > (SELECT s2.createdDate FROM Survey s2 WHERE s2.surveyId = :surveyId)")
+    long countActiveSurveysNewerThan(@Param("surveyId") Long surveyId);
+
 }

@@ -15,6 +15,10 @@ springdoc:
     disabled: true
 
 spring:
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
   datasource:
     url: jdbc:postgresql://db:5432/the_survey_dev
     username: the_survey_dev

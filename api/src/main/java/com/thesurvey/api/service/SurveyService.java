@@ -26,6 +26,7 @@ import com.thesurvey.api.util.PointUtil;
 import com.thesurvey.api.util.StringUtil;
 import com.thesurvey.api.util.UserUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -73,6 +74,10 @@ public class SurveyService {
 
     private final UserUtil userUtil;
 
+    private final CacheManager cacheManager;
+
+    private static final int PAGE_SIZE = 8;
+
     @Transactional(readOnly = true)
     @Cacheable(value = "surveyListCache", key = "#page")
     public SurveyListPageDto getAllSurvey(int page) {
@@ -93,6 +98,7 @@ public class SurveyService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "surveyCache", key = "#surveyId")
     public SurveyResponseDto getSurveyBySurveyIdWithRelatedQuestion(Long surveyId) {
         Survey survey = getSurveyFromSurveyId(surveyId);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -162,7 +168,7 @@ public class SurveyService {
     }
 
     @Transactional
-    @CacheEvict(value = "surveyListCache", allEntries = true)
+    @CacheEvict(value = {"surveyListCache", "surveyCache"}, allEntries = true)
     public void deleteSurvey(Authentication authentication, Long surveyId) {
         User user = userUtil.getUserFromAuthentication(authentication);
         Long userId = user.getUserId();
@@ -194,11 +200,11 @@ public class SurveyService {
     }
 
     @Transactional
-    @CacheEvict(value = "surveyListCache", allEntries = true)
     public SurveyResponseDto updateSurvey(SurveyUpdateRequestDto surveyUpdateRequestDto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long userId = userUtil.getUserIdFromAuthentication(authentication);
-        Survey survey = getSurveyFromSurveyId(surveyUpdateRequestDto.getSurveyId());
+        Long surveyId = surveyUpdateRequestDto.getSurveyId();
+        Survey survey = getSurveyFromSurveyId(surveyId);
 
         // validate survey author from current user
         validateSurveyAuthor(userId, survey.getAuthorId());
@@ -217,7 +223,21 @@ public class SurveyService {
             survey.changeEndedDate(surveyUpdateRequestDto.getEndedDate());
         }
 
-        questionService.updateQuestion(survey.getSurveyId(), surveyUpdateRequestDto.getQuestions());
+        questionService.updateQuestion(surveyId, surveyUpdateRequestDto.getQuestions());
+
+        // 수정된 설문이 속한 페이지만 무효화 (전체 무효화 방지)
+        long newerCount = surveyRepository.countActiveSurveysNewerThan(surveyId);
+        int pageNumber = (int) (newerCount / PAGE_SIZE) + 1;
+        org.springframework.cache.Cache surveyListCache = cacheManager.getCache("surveyListCache");
+        if (surveyListCache != null) {
+            surveyListCache.evict(pageNumber);
+        }
+        // 단건 캐시도 무효화
+        org.springframework.cache.Cache surveyCache = cacheManager.getCache("surveyCache");
+        if (surveyCache != null) {
+            surveyCache.evict(surveyId);
+        }
+
         return surveyMapper.toSurveyResponseDto(survey, userId);
     }
 
